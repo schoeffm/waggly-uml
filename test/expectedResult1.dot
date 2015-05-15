@@ -1,0 +1,22 @@
+digraph G {
+  graph [ ranksep = 1, rankdir = TD ];
+  "A0" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "{ \<\<Interface\>\>\nElementSelectionListener\n|+handleSelection(T\ element)\n }" ];
+  "A1" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "FamMainView" ];
+  "A2" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "AbstractDesMainView" ];
+  "A3" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "{ \<\<Interface\>\>\nFormSubmissionListener\n|+handleSubmissionOf(T\ element)\n+handleCancellationOf(T\ element)\n }" ];
+  "A4" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "FamSearcher" ];
+  "A5" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "FamEditor" ];
+  "A6" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "\<\<Interface\>\>\nElementSelectionNotifier" ];
+  "A7" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "\<\<Interface\>\>\nFormSubmissionNotifier" ];
+  "A0" -> "A1" [ dir = both, arrowtail = empty, taillabel = "", arrowhead = none, headlabel = "", labeldistance = 2, fontsize = 10, style = "dashed" ];
+  "A2" -> "A1" [ dir = both, arrowtail = empty, taillabel = "", arrowhead = none, headlabel = "", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A3" -> "A1" [ dir = both, arrowtail = empty, taillabel = "", arrowhead = none, headlabel = "", labeldistance = 2, fontsize = 10, style = "dashed" ];
+  "A1" -> "A4" [ dir = both, arrowtail = odiamond, taillabel = "", arrowhead = vee, headlabel = "creates", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A1" -> "A5" [ dir = both, arrowtail = odiamond, taillabel = "", arrowhead = vee, headlabel = "creates", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A6" -> "A4" [ dir = both, arrowtail = empty, taillabel = "", arrowhead = none, headlabel = "", labeldistance = 2, fontsize = 10, style = "dashed" ];
+  "A7" -> "A5" [ dir = both, arrowtail = empty, taillabel = "", arrowhead = none, headlabel = "", labeldistance = 2, fontsize = 10, style = "dashed" ];
+  "A1" -> "A6" [ dir = both, arrowtail = none, taillabel = "", arrowhead = vee, headlabel = "registeres", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A1" -> "A7" [ dir = both, arrowtail = none, taillabel = "", arrowhead = vee, headlabel = "registeres", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A3" -> "A4" [ dir = both, arrowtail = vee, taillabel = "notifies", arrowhead = none, headlabel = "", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A0" -> "A5" [ dir = both, arrowtail = vee, taillabel = "notifies", arrowhead = none, headlabel = "", labeldistance = 2, fontsize = 10, style = "solid" ];
+}

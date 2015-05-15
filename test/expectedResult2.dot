@@ -1,0 +1,19 @@
+digraph G {
+  graph [ ranksep = 1, rankdir = TD ];
+  "A0" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "{ \<\<VaadinUI\>\>\nMainUI\n|init()\n }", style = "filled", fillcolor = "cornsilk" ];
+  "A1" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "{ Menu\n|selectMenuItem()\n }", style = "filled", fillcolor = "cornsilk" ];
+  "A2" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "{ \<\<Interface\>\>\nViewChangeListener\n|+beforeViewChange(ViewChangeEvent\ event)\n+afterViewChange(ViewChangeEvent\ event)\n }", style = "filled", fillcolor = "cornsilk" ];
+  "A3" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "{ \<\<Interface\>\>\nMenu.MenuElementChangedListener\n|+handle(MenuElementChangedEvent\ event)\n }", style = "filled", fillcolor = "cornsilk" ];
+  "A4" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "FamMainView", style = "filled", fillcolor = "lightgrey" ];
+  "A5" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "TextBlockMainView", style = "filled", fillcolor = "lightgrey" ];
+  "A6" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "IngredientGroupMainView", style = "filled", fillcolor = "lightgrey" ];
+  "A7" [ shape = record, height = 0.5, fontsize = 10, margin = "0.20, 0.05", label = "{ DesMainLayout\n|\n }", style = "filled", fillcolor = "cornsilk" ];
+  "A0" -> "A1" [ dir = both, arrowtail = none, taillabel = "", arrowhead = vee, headlabel = "creates", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A2" -> "A0" [ dir = both, arrowtail = empty, taillabel = "", arrowhead = none, headlabel = "adjust\nURI", labeldistance = 2, fontsize = 10, style = "dashed" ];
+  "A3" -> "A0" [ dir = both, arrowtail = empty, taillabel = "", arrowhead = none, headlabel = "switch\nContent", labeldistance = 2, fontsize = 10, style = "dashed" ];
+  "A3" -> "A1" [ dir = both, arrowtail = vee, taillabel = "notifies", arrowhead = none, headlabel = "", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A0" -> "A4" [ dir = both, arrowtail = none, taillabel = "", arrowhead = vee, headlabel = "creates", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A0" -> "A5" [ dir = both, arrowtail = none, taillabel = "", arrowhead = vee, headlabel = "creates", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A0" -> "A6" [ dir = both, arrowtail = none, taillabel = "", arrowhead = vee, headlabel = "creates", labeldistance = 2, fontsize = 10, style = "solid" ];
+  "A0" -> "A7" [ dir = both, arrowtail = none, taillabel = "", arrowhead = vee, headlabel = "uses", labeldistance = 2, fontsize = 10, style = "solid" ];
+}

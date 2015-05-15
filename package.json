@@ -1,0 +1,32 @@
+{
+  "name": "wuml",
+  "version": "0.0.1",
+  "description": "A CLI tool which lets you create UML-diagrams based on an ascii description",
+  "private": false,
+  "bin": {
+    "wagglyuml": "./bin/wsvg"
+  },
+  "scripts": {
+    "test": "mocha -R spec"
+  },
+  "author": {
+    "name": "Stefan Schöffmann",
+    "email": "stefan.schoeffmann@posteo.de",
+    "url": "https://github.com/schoeffm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schoeffm/waggly-uml"
+  },
+  "license": "MIT",
+  "bugs": "https://github.com/schoeffm/waggly-uml/issues",
+  "dependencies": {
+    "commander": "~2.0.0",
+    "graphviz": "0.0.8",
+    "wsvg": "0.0.5",
+    "lodash": "^3.8.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.4"
+  }
+}

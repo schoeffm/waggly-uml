@@ -1,0 +1,18 @@
+// foo 
+
+[<<Interface>>;ElementSelectionListener|+handleSelection(T element);]^-.-[FamMainView]
+[AbstractDesMainView]^-[FamMainView]
+[<<Interface>>;FormSubmissionListener|+handleSubmissionOf(T element);+handleCancellationOf(T element)]^-.-[FamMainView]
+
+
+[FamMainView]<>-creates>[FamSearcher]
+[FamMainView]<>-creates>[FamEditor]
+
+[<<Interface>>;ElementSelectionNotifier]^-.-[FamSearcher]
+[<<Interface>>;FormSubmissionNotifier]^-.-[FamEditor]
+
+[FamMainView]-registeres>[<<Interface>>;ElementSelectionNotifier]
+[FamMainView]-registeres>[<<Interface>>;FormSubmissionNotifier]
+
+[<<Interface>>;FormSubmissionListener]<notifies-[FamSearcher]
+[<<Interface>>;ElementSelectionListener]<notifies-[FamEditor]
