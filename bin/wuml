@@ -59,10 +59,25 @@ var handleSVGData = function(svgInputData, config, callback) {
 
 var handleOutputData = function(outputData, config, callback) {
     if (config.output) {
-        fs.writeFile(config.output, outputData, function (err) {
+        fs.writeFile(config.output.replace(/png$/, 'svg'), outputData, function (err) {
             if (err) return console.log(err);
-            if (config.png) {
-                exec('rsvg-convert -f png -o ' + config.output.replace(/svg$/, 'png') + ' ' + config.output);
+            if (config.png || config.output.endsWith('png')) {
+                var rsvg = spawn('rsvg-convert', ['-f', 'png', '-o', config.output.replace(/svg$/, 'png'), config.output.replace(/png$/, 'svg')]);
+                rsvg.stdout.on('data', function(output) { console.log(output.toString()); });
+                rsvg.stderr.on('data', function(output) { console.log(output.toString()); });
+                rsvg.on('close', function(code) {
+                    /*
+                    fs.unlink(config.output.replace(/png$/, 'svg'), function(err) {
+                        if (err) { 
+                            console.log("Couldn't remove the temporary file %s - please do this manually", 
+                                config.output.replace(/png$/, 'svg')) 
+                        }
+                    });
+                    */
+                });
+                
+                // exec('rsvg-convert -f png -o ' + config.output.replace(/svg$/, 'png') + ' ' + config.output.replace(/png$/, 'svg'));
+                // fs.unlink(config.output.replace(/png$/, 'svg'));
             }
         });
     } else if(callback) {
