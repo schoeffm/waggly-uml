@@ -4,10 +4,11 @@
   "description": "A CLI tool which lets you create UML-diagrams based on an ascii description",
   "private": false,
   "bin": {
-    "wagglyuml": "./bin/wsvg"
+    "wsvg": "./bin/wsvg"
   },
   "scripts": {
-    "test": "mocha -R spec"
+    "env": "env",
+    "test": "env exportForTesting=true mocha -R spec"
   },
   "author": {
     "name": "Stefan Schöffmann",
@@ -23,7 +24,7 @@
   "dependencies": {
     "commander": "~2.0.0",
     "graphviz": "0.0.8",
-    "wsvg": "0.0.5",
+    "wsvg": "0.0.6",
     "lodash": "^3.8.0"
   },
   "devDependencies": {
