@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "A CLI tool which lets you create UML-diagrams based on an ascii description",
   "private": false,
-  "main": "./bin/wsvg",
+  "main": "./bin/wuml",
   "bin": {
-    "wsvg": "./bin/wsvg"
+    "wuml": "./bin/wuml"
   },
   "scripts": {
     "env": "env",
