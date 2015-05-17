@@ -66,18 +66,13 @@ var handleOutputData = function(outputData, config, callback) {
                 rsvg.stdout.on('data', function(output) { console.log(output.toString()); });
                 rsvg.stderr.on('data', function(output) { console.log(output.toString()); });
                 rsvg.on('close', function(code) {
-                    /*
                     fs.unlink(config.output.replace(/png$/, 'svg'), function(err) {
                         if (err) { 
                             console.log("Couldn't remove the temporary file %s - please do this manually", 
                                 config.output.replace(/png$/, 'svg')) 
                         }
                     });
-                    */
                 });
-                
-                // exec('rsvg-convert -f png -o ' + config.output.replace(/svg$/, 'png') + ' ' + config.output.replace(/png$/, 'svg'));
-                // fs.unlink(config.output.replace(/png$/, 'svg'));
             }
         });
     } else if(callback) {
