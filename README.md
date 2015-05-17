@@ -10,21 +10,16 @@ wuml
 So as an example - it converts input like this:
 
 ```
-[<<Interface>>;ElementSelectionListener|+handleSelection(T element);]^-.-[FamMainView]
-[AbstractDesMainView]^-[FamMainView]
-[<<Interface>>;FormSubmissionListener|+handleSubmissionOf(T element);+handleCancellationOf(T element)]^-.-[FamMainView]
-
-[FamMainView]<>-creates>[FamSearcher]
-[FamMainView]<>-creates>[FamEditor]
-
-[<<Interface>>;ElementSelectionNotifier]^-.-[FamSearcher]
-[<<Interface>>;FormSubmissionNotifier]^-.-[FamEditor]
-
-[FamMainView]-registeres>[<<Interface>>;ElementSelectionNotifier]
-[FamMainView]-registeres>[<<Interface>>;FormSubmissionNotifier]
-
-[<<Interface>>;FormSubmissionListener]<notifies-[FamSearcher]
-[<<Interface>>;ElementSelectionListener]<notifies-[FamEditor]
+[<<VaadinUI>>;MainUI|init(){bg:cornsilk}]-creates>[Menu|selectMenuItem(){bg:cornsilk}]                                     
+                                                                                                                           
+[<<Interface>>;ViewChangeListener|+beforeViewChange(ViewChangeEvent event);+afterViewChange(ViewChangeEvent event){bg:cornsilk}]^-.-adjust\nURI[<<VaadinUI>>;MainUI{bg:yellow}]
+[<<Interface>>;Menu.MenuElementChangedListener|+handle(MenuElementChangedEvent event){bg:cornsilk}]^-.-switch\nContent[<<VaadinUI>>;MainUI]
+[<<Interface>>;Menu.MenuElementChangedListener|+handle(MenuElementChangedEvent event)]<notifies-[Menu]                     
+                                                                                                                           
+[<<VaadinUI>>;MainUI]-creates>[FamMainView{bg:lightgrey}]                                                                  
+[<<VaadinUI>>;MainUI]-creates>[TextBlockMainView{bg:lightgrey}]                                                            
+[<<VaadinUI>>;MainUI]-creates>[IngredientGroupMainView{bg:lightgrey}]                                                      
+[<<VaadinUI>>;MainUI]-uses>[DesMainLayout|{bg:cornsilk}]
 ```
 into diagrams like that:
 
