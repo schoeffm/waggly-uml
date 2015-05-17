@@ -16,10 +16,10 @@ So as an example - it converts input like this:
 [<<Interface>>;Menu.MenuElementChangedListener|+handle(MenuElementChangedEvent event){bg:cornsilk}]^-.-switch\nContent[<<VaadinUI>>;MainUI]
 [<<Interface>>;Menu.MenuElementChangedListener|+handle(MenuElementChangedEvent event)]<notifies-[Menu]                     
                                                                                                                            
-[<<VaadinUI>>;MainUI]-creates>[FamMainView{bg:lightgrey}]                                                                  
-[<<VaadinUI>>;MainUI]-creates>[TextBlockMainView{bg:lightgrey}]                                                            
-[<<VaadinUI>>;MainUI]-creates>[IngredientGroupMainView{bg:lightgrey}]                                                      
-[<<VaadinUI>>;MainUI]-uses>[DesMainLayout|{bg:cornsilk}]
+[<<VaadinUI>>;MainUI]-creates>[WelcomeMainView{bg:lightgrey}]                                                              
+[<<VaadinUI>>;MainUI]-creates>[TextSearchMainView{bg:lightgrey}]                                                           
+[<<VaadinUI>>;MainUI]-creates>[GroupMainView{bg:lightgrey}]                                                                
+[<<VaadinUI>>;MainUI]-uses>[MainLayout|{bg:cornsilk}]
 ```
 into diagrams like that:
 
