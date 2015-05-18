@@ -116,7 +116,7 @@ Well - there's also a `Dockerfile` contained in the git-repo you can use to get 
 
 ```
 $ cd docker
-$ docker build -t="<YOUR_USER_NAME>/wuml" .
+$ docker build -t="schoeffm/wuml" .
 $ docker run --rm -ti schoeffm/wuml -h
   Usage: wuml [options]
 
@@ -133,10 +133,8 @@ $ docker run --rm -ti schoeffm/wuml -h
     --fontFamily <font>          Set the output font-family (i.e. Purisa or Dadhand)
     --fontSize <size>            Set the size of the font to be used
     
-$ docker run --rm -ti -v /absolue/path/to/test/data:/data <YOUR_USER_NAME>/wuml -i /data/input.wuml -o /data/output.png -p -w --fontFamily Purisa`
+$ docker run --rm -ti -v /absolue/path/to/test/data:/data schoeffm/wuml -i /data/input.wuml -o /data/output.png -p -w --fontFamily Purisa`
 ```
-
-- rsvg-convert (i.e. `brew install librsvg`, `suo apt-get install librsvg2-dev` or `sudo yum install librsvg2-devel`) is used to convert svg-graphics to png
 
 
 
