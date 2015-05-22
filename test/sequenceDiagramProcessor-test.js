@@ -96,8 +96,7 @@ describe("'sequenceDiagramProcessor'", function() {
             "[Waiter]-serve food>[Patron] \n" +
             "[Patron]-pay>[Cashier]";
         
-        var expectedSequenceOutput = '.PS\n' +
-            'copy "/Users/schoeffm/workspace/wagglyuml/bin/sequence.pic";\n' +
+        var expectedSequenceOutput = 
             'underline=0;\n' +
             'object(Rec0,"Patron",20);\n' +
             'object(Rec2,"Waiter",20);\n' +
@@ -125,7 +124,7 @@ describe("'sequenceDiagramProcessor'", function() {
         
         it('... create an expected output that is a valid pic-format', function(done) {
             sequenceParser.processString(testSequenceInput, function(transformed) {
-                assert.equal(transformed, expectedSequenceOutput);
+                assert(_.endsWith(transformed, expectedSequenceOutput));
                 done();
             });
         });
