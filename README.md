@@ -89,7 +89,7 @@ The module exposes one factory-method which returns the actual transformer based
 
 # Prerequisites
 
-In order to use the tool you'll have to install at least two additional dependencies - `graphviz` and `rsvg-converter` (the installation of additional, hand-written looking fonts is up to your taste).
+In order to use the tool you'll have to install at least two additional dependencies - `graphviz`, `rsvg-converter` and `plotutils` (the installation of additional, hand-written looking fonts is up to your taste).
 
 ## MacOS
 
@@ -97,6 +97,7 @@ On Mac you can install both tools via [homebrew][brew]
 
 - ```brew install graphviz```
 - ```brew install librsvg```
+- ```brew install plotutils``
 
 After that the upper mentioned `npm install wuml -g` should be enough to get started.
 
