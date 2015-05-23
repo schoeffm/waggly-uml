@@ -186,7 +186,7 @@ define create_message {
         }
 
 	# See comment in destroy_message
-	XSEQA: arrow from ($1.x + off_from, Here.y) to ($2.x + off_to, Here.y) "«create»" " ";
+	XSEQA: arrow from ($1.x + off_from, Here.y) to ($2.x + off_to, Here.y) "Â«createÂ»" " ";
 	if ($1.x <= $2.x) then {
 		{ XSEQB: box $3 with .w at XSEQA.end; }
 	} else {
@@ -220,7 +220,7 @@ define destroy_message {
 	# The pic2plot code is \Fo \Fc
 	# See http://www.delorie.com/gnu/docs/plotutils/plotutils_71.html
 	# To stay compatible with all we have to hardcode the characters
-	message($1,$2,"«destroy»");
+	message($1,$2,"Â«destroyÂ»");
 	complete($2);
 	drawx($2);
 }
