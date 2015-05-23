@@ -1,0 +1,7 @@
+// see http://www.umlgraph.org/doc/uml-appa.html
+[t:thread]-run()>[:Toolkit]
+[:Toolkit]-callbackLoop()>[:Toolkit]
+[:Toolkit]-create>[p:Peer]
+[:Toolkit]-handleExpose()>[p:Peer]
+[p:Peer]-.->[:Toolkit]
+[:Toolkit]-destroy>[p:Peer]

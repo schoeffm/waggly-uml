@@ -21,9 +21,26 @@ So as an example - it converts input like this:
 [<<VaadinUI>>;MainUI]-creates>[GroupMainView{bg:lightgrey}]                                                                
 [<<VaadinUI>>;MainUI]-uses>[MainLayout|{bg:cornsilk}]
 ```
-into diagrams like that:
+into class-diagrams like that:
 
 ![Example](https://github.com/schoeffm/waggly-uml/blob/master/doc/example.png)
+
+
+another example would be this sequence diagram input
+
+```
+[t:thread]-run()>[:Toolkit]
+[:Toolkit]-callbackLoop()>[:Toolkit]
+[:Toolkit]-create>[p:Peer]
+[:Toolkit]-handleExpose()>[p:Peer]
+[p:Peer]-.->[:Toolkit]
+[:Toolkit]-destroy>[p:Peer]
+```
+
+which gets converted to:
+
+![Example2](https://github.com/schoeffm/waggly-uml/blob/master/doc/example.2.png)
+
 
 # Usage
 
