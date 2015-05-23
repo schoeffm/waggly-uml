@@ -102,7 +102,7 @@ var toPicModel = function(tokenList) {
         picLines.push(util.format('%s(%s,%s,"%s");', messageType , 
             objectLookupCache[recordName(value.from.content.text)].uid,
             objectLookupCache[recordName(value.to.content.text)].uid,
-            value.text));
+            (messageType === 'cmessage') ? value.to.content.text : value.text));
         
         if (messageType === 'cmessage') {
             picLines.push(util.format('active(%s);', objectLookupCache[recordName(value.to.content.text)].uid));
