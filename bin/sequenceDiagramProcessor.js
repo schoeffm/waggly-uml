@@ -58,6 +58,7 @@ var filterPassiveObjects = function(messageLookupCache) {
 var mapMessageType = function(value) {
     var type = 'message'; 
     if (value.text === 'create') { type = 'cmessage'; }
+    else if (value.text === 'destroy') { type = 'dmessage'; }
     
     if (type === 'message') {
         type = (value.content.style === 'dashed') ? 'return_message' : 'message';
@@ -95,6 +96,9 @@ var toPicModel = function(tokenList) {
     // now place all messages between our objects
     _.forEach(messageLookupCache, function(value, key) {
         var messageType = mapMessageType(value);
+        if (messageType === 'dmessage') {
+            picLines.push(util.format('inactive(%s);', objectLookupCache[recordName(value.to.content.text)].uid));
+        }
         picLines.push(util.format('%s(%s,%s,"%s");', messageType , 
             objectLookupCache[recordName(value.from.content.text)].uid,
             objectLookupCache[recordName(value.to.content.text)].uid,
