@@ -137,7 +137,7 @@ describe("'sequenceDiagramProcessor'", function() {
             'active(Rec2);\n' +
             'active(Rec17);\n' +
             'message(Rec0,Rec2,"order food");\n' +
-            'cmessage(Rec2,Rec5,"create");\n' +
+            'cmessage(Rec2,Rec5,"Cook");\n' +
             'active(Rec5);\n' +
             'return_message(Rec2,Rec0,"serve wine");\n' +
             'message(Rec2,Rec5,"pickup");\n' +
