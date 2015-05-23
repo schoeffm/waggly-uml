@@ -19,7 +19,7 @@ types['sequence'] = sequenceProcessor;
 types[''] = notSupportedProcessor;
     
 program
-    .version('0.0.1')
+    .version('0.0.5')
     .option('-f, --format [svg|png]', "Determine your prefered output format (default id 'svg')")
     .option('-t, --type [class|sequence]', "Determines the graph-type to be created based on the given input (default is 'class')")
     .option('-c, --content <content>', "UML-image content as input-string")
