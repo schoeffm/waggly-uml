@@ -84,13 +84,43 @@ describe("'sequenceDiagramProcessor'", function() {
             assert.strictEqual(sequenceParser.collectMessages(testTokenListWithIdenticalMessages, 
                 objectMap4tokenListWithIdenticalMessages)['Lin4'].text, 'order food');
         });
-    });    
+    });
+    describe("when created a cache full of objects 'filterPassiveObjects' should", function() {
+        var lookupCache = {
+            Lin1: { type: 'edge', text: 'create', to: { content: {text: 'passive'}}, content: { left: {}, right: {}, style: 'solid'}},
+            Lin2: { type: 'edge', text: 'bar()', to: { content: {text: 'active'}},  content: { left: {}, right: {}, style: 'dashed'}},
+            Lin3: { type: 'edge', text: 'foo()', to: { content: {text: 'active'}}, content: { left: {}, right: {}, style: 'solid'}}
+        };
+
+        it('... identify all passive objects due to create-messages', function() {
+            assert.strictEqual(_.size(sequenceParser.filterPassiveObjects(lookupCache)), 1);
+            assert.deepEqual(sequenceParser.filterPassiveObjects(lookupCache)['passive'], { content: {text: 'passive'}});
+        });
+    });
+    
+    describe("when created a cache full of messages 'mapMessageType' should", function() {
+        var createMessage = { type: 'edge', text: 'create', uid1: 'Rec0', uid2: 'Rec1', content: { left: {}, right: {}, style: 'solid' } };
+        var returnMessage = { type: 'edge', text: 'bar()', uid1: 'Rec0', uid2: 'Rec1', content: { left: {}, right: {}, style: 'dashed' } };
+        var normalMessage = { type: 'edge', text: 'foo()', uid1: 'Rec0', uid2: 'Rec1', content: { left: {}, right: {}, style: 'solid' } };
+        
+        it('... recognize when we got a create-message', function() {
+            assert.strictEqual(sequenceParser.mapMessageType(createMessage), 'cmessage');
+        });
+        
+        it('... recognize when we got a return-message', function() {
+            assert.strictEqual(sequenceParser.mapMessageType(returnMessage), 'return_message');
+        });
+        
+        it('... recognize when we got a normal-message', function() {
+            assert.strictEqual(sequenceParser.mapMessageType(normalMessage), 'message');
+        });
+    });
     
     describe("'when processing a given token-list 'toPicModel' should", function() {
         
         var testSequenceInput = "// this is a comment \n" +
             "[Patron]-order food>[Waiter] \n" +
-            "[Waiter]-order food>[Cook] \n" +
+            "[Waiter]-create>[Cook] \n" +
             "[Waiter]-.-serve wine>[Patron] \n" +
             "[Cook]<pickup-[Waiter] \n" +
             "[Waiter]-serve food>[Patron] \n" +
@@ -100,15 +130,15 @@ describe("'sequenceDiagramProcessor'", function() {
             'underline=0;\n' +
             'object(Rec0,"Patron",20);\n' +
             'object(Rec2,"Waiter",20);\n' +
-            'object(Rec5,"Cook",20);\n' +
+            'pobject(Rec5,"Cook",20);\n' +
             'object(Rec17,"Cashier",20);\n' +
             'step();\n' +
             'active(Rec0);\n' +
             'active(Rec2);\n' +
-            'active(Rec5);\n' +
             'active(Rec17);\n' +
             'message(Rec0,Rec2,"order food");\n' +
-            'message(Rec2,Rec5,"order food");\n' +
+            'cmessage(Rec2,Rec5,"create");\n' +
+            'active(Rec5);\n' +
             'return_message(Rec2,Rec0,"serve wine");\n' +
             'message(Rec2,Rec5,"pickup");\n' +
             'message(Rec2,Rec0,"serve food");\n' +
@@ -134,6 +164,7 @@ describe("'sequenceDiagramProcessor'", function() {
                     return element.substring(0, element.indexOf('('));
                 });
                 assert(result['object'], 4);
+                assert(result['pobject'], 1);
                 assert(result['active'], 4);
                 assert(result['complete'], 4);
                 assert(result['message'], 6);

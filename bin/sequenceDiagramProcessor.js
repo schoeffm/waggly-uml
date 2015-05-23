@@ -34,6 +34,8 @@ var collectMessages = function(tokenList, nodeLookupCache) {
             messageLookupList['Lin' + i] = _.merge(token,
                 {
                     text: text,
+                    from: (token.content.right.type === 'vee') ? leftObject : rightObject,
+                    to: (token.content.right.type === 'vee') ? rightObject : leftObject,
                     uid1: nodeLookupCache[recordName(leftObject.content.text)].uid,
                     uid2: nodeLookupCache[recordName(rightObject.content.text)].uid
                 });
@@ -41,9 +43,21 @@ var collectMessages = function(tokenList, nodeLookupCache) {
     return messageLookupList;
 };
 
+var filterPassiveObjects = function(messageLookupCache) {
+    var result = _.filter(messageLookupCache, function(value, key) { return value.text === 'create'; });
+    
+    var passiveObjects = {};
+    
+    _.reduce(result, function(acc, element, key){
+        acc[recordName(element.to.content.text)] = element.to;  // the to-object will be created lazily                
+    }, passiveObjects);
+    
+    return passiveObjects;
+};
+
 var mapMessageType = function(value) {
     var type = 'message'; 
-    // if (value.text === 'create') { type = 'cmessage'; }
+    if (value.text === 'create') { type = 'cmessage'; }
     
     if (type === 'message') {
         type = (value.content.style === 'dashed') ? 'return_message' : 'message';
@@ -57,37 +71,38 @@ var toPicModel = function(tokenList) {
 
     var objectLookupCache = collectObjects(tokenList);
     var messageLookupCache = collectMessages(tokenList, objectLookupCache);
+    var passiveObjects = filterPassiveObjects(messageLookupCache);
 
     // start the diagram by including the sequence.pic
     picLines.push('.PS');
     picLines.push(util.format('copy "%s";', __dirname + "/sequence.pic"));
     picLines.push('underline=0;');
-    //picLines.push('spacing=0.2;');
-    //picLines.push('maxpsht=8;');
-    //picLines.push('maxpswid=6;');
-    //picLines.push('boxwid = 4;');
-    //picLines.push('boxht = 01;');
-    // picLines.push('movewid = 0.25;');
     
     // first - add all (unique) objects to the diagram 
     _.forEach(objectLookupCache, function(value, key) {
-        picLines.push(util.format('object(%s,"%s",%d);', value.uid, key, 20));
+        var objectType = (passiveObjects[recordName(value.content.text)]) ? 'pobject' : 'object' ;
+        picLines.push(util.format('%s(%s,"%s",%d);', objectType, value.uid, key, 20));
     });
     picLines.push('step();');
     
-    // after the step - activate all added objects
+    // after the step - activate all objects (don't activate placeholder-objects)
     _.forEach(objectLookupCache, function(value) {
-        picLines.push(util.format('active(%s);', value.uid));
+        if (! passiveObjects[recordName(value.content.text)]) {
+            picLines.push(util.format('active(%s);', value.uid));
+        }
     });
     
     // now place all messages between our objects
     _.forEach(messageLookupCache, function(value, key) {
         var messageType = mapMessageType(value);
-        var left_to_right = value.content.right.type === 'vee';
         picLines.push(util.format('%s(%s,%s,"%s");', messageType , 
-            (left_to_right) ? value.uid1 : value.uid2,
-            (left_to_right) ? value.uid2 : value.uid1,
+            objectLookupCache[recordName(value.from.content.text)].uid,
+            objectLookupCache[recordName(value.to.content.text)].uid,
             value.text));
+        
+        if (messageType === 'cmessage') {
+            picLines.push(util.format('active(%s);', objectLookupCache[recordName(value.to.content.text)].uid));
+        }
     });
 
     picLines.push('step();');
@@ -134,4 +149,6 @@ if (process.env.exportForTesting) {
     module.exports.toPicModel = toPicModel;
     module.exports.collectMessages = collectMessages;
     module.exports.collectObjects = collectObjects;
+    module.exports.mapMessageType = mapMessageType;
+    module.exports.filterPassiveObjects = filterPassiveObjects;
 }
