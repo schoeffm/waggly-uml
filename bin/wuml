@@ -12,6 +12,7 @@ var fs = require('fs');
 var util = require('util');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
+var pjson = require('../package.json');
 
 var types = {};
 types['class'] = classProcessor;
@@ -19,7 +20,7 @@ types['sequence'] = sequenceProcessor;
 types[''] = notSupportedProcessor;
     
 program
-    .version('0.0.5')
+    .version(pjson.version)
     .option('-f, --format [svg|png]', "Determine your prefered output format (default id 'svg')")
     .option('-t, --type [class|sequence]', "Determines the graph-type to be created based on the given input (default is 'class')")
     .option('-c, --content <content>', "UML-image content as input-string")
