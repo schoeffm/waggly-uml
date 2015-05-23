@@ -25,7 +25,7 @@
   "dependencies": {
     "commander": "~2.0.0",
     "graphviz": "0.0.8",
-    "wsvg": "0.0.6",
+    "wsvg": "^0.0.6",
     "lodash": "^3.8.0"
   },
   "devDependencies": {
