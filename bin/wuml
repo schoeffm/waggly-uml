@@ -3,22 +3,18 @@
 
 var program  = require('commander');
 var _ = require('lodash');
-var graphviz = require('graphviz');
-var wagglySvg = require('wsvg');
+var umlProcessor = require('./umlProcessor');
+var fs = require('fs');
+var pjson = require('../package.json');
 var classProcessor = require('./classDiagramProcessor');
 var sequenceProcessor = require('./sequenceDiagramProcessor');
 var notSupportedProcessor = require('./notSupportedDiagramProcessor');
-var fs = require('fs');
-var util = require('util');
-var exec = require('child_process').exec;
-var spawn = require('child_process').spawn;
-var pjson = require('../package.json');
 
 var types = {};
 types['class'] = classProcessor;
 types['sequence'] = sequenceProcessor;
 types[''] = notSupportedProcessor;
-    
+
 program
     .version(pjson.version)
     .option('-f, --format [svg|png]', "Determine your prefered output format (default id 'svg')")
@@ -33,62 +29,7 @@ program
 
 // ------------------------ private functions ---------------------
 
-var processUmlOutput = function (inputData, config, callback) {
-    var process;
-    if (config.type === 'sequence') {
-        // convert sequence.png -fuzz 10% -trim result.png
-        process = spawn('pic2plot', ['-Tsvg', '-f', '0.0175', '--page-size', 'a']);
-    } else {
-        process = spawn('dot', ['-Tsvg']);
-    }
-    var accumulator = '';
-    process.stdout.on('data', function (dotOutputData) { accumulator += dotOutputData.toString(); });
-    process.on('exit', function (exitCode) {
-        if (exitCode === 0) { handleSVGData(accumulator, config, callback); }
-        else { console.error("SVG-creation wasn't successful - exitCode " + exitCode); }
-    });
-    process.stderr.on('data', function (error) { console.error(error.toString()); });
 
-    process.stdin.write(inputData, function () { process.stdin.end(); });
-};
-
-var handleSVGData = function(svgInputData, config, callback) {
-    var waggly = config.waggly || false;
-    var wagger = wagglySvg.create({
-        waggly: waggly,
-        font_family: (waggly) ? (config.fontFamily || 'Dadhand') : undefined,
-        font_size: (waggly) ? (config.fontSize || 10) : undefined
-    }, function(waggledData) { 
-        handleOutputData(waggledData, config, callback); 
-    });
-    
-    wagger.transformString(svgInputData);
-};
-
-var handleOutputData = function(outputData, config, callback) {
-    if (config.output) {
-        fs.writeFile(config.output.replace(/png$/, 'svg'), outputData, function (err) {
-            if (err) return console.log(err);
-            if (config.format && _.endsWith(config.format, 'png')) {
-                var rsvg = spawn('rsvg-convert', ['-f', 'png', '-o', config.output.replace(/svg$/, 'png'), config.output.replace(/png$/, 'svg')]);
-                rsvg.stdout.on('data', function(output) { console.log(output.toString()); });
-                rsvg.stderr.on('data', function(output) { console.log(output.toString()); });
-                rsvg.on('close', function(code) {
-                    fs.unlink(config.output.replace(/png$/, 'svg'), function(err) {
-                        if (err) { 
-                            console.log("Couldn't remove the temporary file %s - please do this manually", 
-                                config.output.replace(/png$/, 'svg')) 
-                        }
-                    });
-                });
-            }
-        });
-    } else if(callback) {
-        callback(outputData);
-    } else {
-        console.log(outputData);
-    }
-};
 
 if (!process.argv.slice(2).length) {
     console.log('No command specified. See \'wuml --help\':');
@@ -100,23 +41,11 @@ if (!process.argv.slice(2).length) {
 var processor = (program.type && types[program.type]) ? types[program.type] : classProcessor;
 
 if (program.content) {
-    processor.processString(program.content, function(output) { processUmlOutput(output, program); });
+    processor.processString(program.content, function(output) { umlProcessor.processUmlOutput(output, program); });
 } else if (program.input) {
-    processor.processFile(program.input, function(output) { processUmlOutput(output, program); });
+    processor.processFile(program.input, function(output) { umlProcessor.processUmlOutput(output, program); });
 } else {
     console.log('No input specified. See \'wuml --help\':');
     program.outputHelp();
     process.exit(1);
 }
-
-
-module.exports.createDiagram = function(umlAsString, config, callback) {
-    var cb = (callback === undefined && typeof config === 'function') ? config : callback;
-    if (cb === undefined || typeof cb !== 'function') { throw new Error('You have to provide a callback-function'); }
-
-    var processor = (config.type && types[program.type]) ? types[config.type] : classProcessor;
-    
-    processor.processString(program.content, function(output) { 
-        processUmlOutput(output, config, callback); 
-    });
-};

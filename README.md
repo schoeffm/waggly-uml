@@ -125,7 +125,7 @@ Well, depending on the specific distribution you use the packages may differ as 
 
 ```
 apt-get update
-apt-get install -y librsvg2-bin graphviz
+apt-get install -y librsvg2-bin graphviz plotutils
 ```
 
 ## others
