@@ -24,14 +24,17 @@ var processUmlOutput = function (inputData, config, callback) {
     var process;
     if (config.type === 'sequence') {
         // convert sequence.png -fuzz 10% -trim result.png
-        process = spawn('pic2plot', ['-Tsvg', '-f', '0.0175', '--page-size', 'a']);
+        process = spawn('pic2plot', ['-Tsvg', '-f', '0.0175', '--page-size', 'b']);
     } else {
         process = spawn('dot', ['-Tsvg']);
     }
     var accumulator = '';
     process.stdout.on('data', function (dotOutputData) { accumulator += dotOutputData.toString(); });
     process.on('exit', function (exitCode) {
-        if (exitCode === 0) { handleSVGData(accumulator, config, callback); }
+        if (exitCode === 0) {
+            accumulator = accumulator.replace(/(g id="content" transform="translate)(\(.*?\))/gm, '$1(0.05,0.05)');
+            handleSVGData(accumulator, config, callback); 
+        }
         else { console.error("SVG-creation wasn't successful - exitCode " + exitCode); }
     });
     process.stderr.on('data', function (error) { console.error(error.toString()); });
