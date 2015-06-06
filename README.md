@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/schoeffm/waggly-uml.svg?branch=master)](https://travis-ci.org/schoeffm/waggly-uml)
 [![npm version](https://badge.fury.io/js/wuml.svg)](http://badge.fury.io/js/wuml)
+[![License MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://img.shields.io/badge/license-MIT-brightgreen.svg)
 
 wuml
 =============
