@@ -34,8 +34,8 @@ var collectMessages = function(tokenList, nodeLookupCache) {
             messageLookupList['Lin' + i] = _.merge(token,
                 {
                     text: text,
-                    from: (token.content.right.type === 'vee') ? leftObject : rightObject,
-                    to: (token.content.right.type === 'vee') ? rightObject : leftObject,
+                    from: (token.content.right.type === 'normal') ? leftObject : rightObject,
+                    to: (token.content.right.type === 'normal') ? rightObject : leftObject,
                     uid1: nodeLookupCache[recordName(leftObject.content.text)].uid,
                     uid2: nodeLookupCache[recordName(rightObject.content.text)].uid
                 });

@@ -40,7 +40,7 @@ describe("'parser'", function() {
                 { type: 'record', content: { background: '', text: 'Patron' } });
             assert.deepEqual(
                 parser.toDocumentModel(testSequenceInput)[1],
-                { type: 'edge', content: {left: {type: 'none', text: ''}, right: {type: 'vee', text: 'order food'}, style: 'solid'}});
+                { type: 'edge', content: {left: {type: 'none', text: ''}, right: {type: 'normal', text: 'order food'}, style: 'solid'}});
         });
     });
     
@@ -195,8 +195,8 @@ describe("'parser'", function() {
                 assert.strictEqual('magnitude', parser.processEdge(diamondEdge).content.left.text);
                 assert.strictEqual('0..*', parser.processEdge(diamondEdge).content.right.text);
             });
-            it('edges with right vee, should be recognized', function () {
-                assert.strictEqual('vee', parser.processEdge(diamondEdge).content.right.type);
+            it('edges with right normal, should be recognized', function () {
+                assert.strictEqual('normal', parser.processEdge(diamondEdge).content.right.type);
             });
             it('edges with left empty, should be recognized', function () {
                 assert.strictEqual('empty', parser.processEdge(emptyEdge).content.left.type);

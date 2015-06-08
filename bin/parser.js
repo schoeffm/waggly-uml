@@ -117,14 +117,14 @@ var processEdge = function(edgeToken) {
     if (_.startsWith(left, '<>')) { leftResult = { type: 'odiamond', text: left.substring(2,left.length)}; }
     else if (_.startsWith(left, '++')) { leftResult = { type: 'diamond', text: left.substring(2,left.length)}; }
     else if (_.startsWith(left, '+')) { leftResult = { type: 'odiamond', text: left.substring(1,left.length)}; }
-    else if (_.startsWith(left, '<') || _.startsWith(left, '>')) { leftResult = { type: 'vee', text: left.substring(1,left.length)}; }
+    else if (_.startsWith(left, '<') || _.startsWith(left, '>')) { leftResult = { type: 'normal', text: left.substring(1,left.length)}; }
     else if (_.startsWith(left, '^')) { leftResult = { type: 'empty', text: left.substring(1,left.length)}; }
     else { leftResult = { type: 'none', text: left }; }
 
     if (_.endsWith(right, '<>')) { rightResult = { type: 'odiamond', text: right.substring(0,right.length - 2)}; }
     else if (_.endsWith(right, '++')) { rightResult = { type: 'diamond', text: right.substring(0,right.length - 2)}; }
     else if (_.endsWith(right, '+')) { rightResult = { type: 'odiamond', text: right.substring(0,right.length - 1)}; }
-    else if (_.endsWith(right, '<') || _.endsWith(right, '>')) { rightResult = { type: 'vee', text: right.substring(0,right.length - 1)}; }
+    else if (_.endsWith(right, '<') || _.endsWith(right, '>')) { rightResult = { type: 'normal', text: right.substring(0,right.length - 1)}; }
     else if (_.endsWith(right, '^')) { rightResult = { type: 'empty', text: right.substring(0,right.length - 1)}; }
     else { rightResult = { type: 'none', text: right }; }
 

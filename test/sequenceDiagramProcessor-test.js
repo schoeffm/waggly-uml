@@ -17,7 +17,7 @@ describe("'sequenceDiagramProcessor'", function() {
             {
                 type: 'edge', content: {
                 left: {type: "none", text: ''},
-                right: {type: "vee", text: "order food"},
+                right: {type: "normal", text: "order food"},
                 style: 'solid'
             }
             },
@@ -46,7 +46,7 @@ describe("'sequenceDiagramProcessor'", function() {
             {
                 type: 'edge', content: {
                 left: {type: "none", text: ''},
-                right: {type: "vee", text: "order food"},
+                right: {type: "normal", text: "order food"},
                 style: 'solid'
             }
             },
@@ -55,7 +55,7 @@ describe("'sequenceDiagramProcessor'", function() {
             {
                 type: 'edge', content: {
                 left: {type: "none", text: 'order food'},
-                right: {type: "vee", text: "no matter what's up"},
+                right: {type: "normal", text: "no matter what's up"},
                 style: 'solid'
             }
             },
@@ -154,6 +154,7 @@ describe("'sequenceDiagramProcessor'", function() {
         
         it('... create an expected output that is a valid pic-format', function(done) {
             sequenceParser.processString(testSequenceInput, function(transformed) {
+                console.log(transformed);
                 assert(_.endsWith(transformed, expectedSequenceOutput));
                 done();
             });
