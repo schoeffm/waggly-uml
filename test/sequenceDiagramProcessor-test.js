@@ -23,12 +23,13 @@ describe("'sequenceDiagramProcessor'", function() {
             },
             {type: 'record', content: {background: '', text: 'Waiter'}},
             {type: 'record', content: {background: 'green', text: 'Waiter'}},
-            {type: 'record', content: {background: 'green', text: 'IsolatedNode'}}
+            {type: 'record', content: {background: 'green', text: 'IsolatedNode'}},
+            {type: 'record', content: {background: '', text: 'actor:IsolatedNode'}}
         ];
         
         it('... extract only unique objects', function() {
-            assert.equal(_.size(testTokenList), 5);
-            assert.equal(_.size(sequenceParser.collectObjects(testTokenList)), 3);            
+            assert.equal(_.size(testTokenList), 6);
+            assert.equal(_.size(sequenceParser.collectObjects(testTokenList)), 4);            
         });
         
         it('... enhance all recored-tokens with a unique id', function() {
@@ -91,10 +92,13 @@ describe("'sequenceDiagramProcessor'", function() {
             Lin2: { type: 'edge', text: 'bar()', to: { content: {text: 'active'}},  content: { left: {}, right: {}, style: 'dashed'}},
             Lin3: { type: 'edge', text: 'foo()', to: { content: {text: 'active'}}, content: { left: {}, right: {}, style: 'solid'}}
         };
+        var objectCache = {
+            Obj1: { type: 'record', content: {text: 'actor:foo'} }    
+        };
 
         it('... identify all passive objects due to create-messages', function() {
-            assert.strictEqual(_.size(sequenceParser.filterPassiveObjects(lookupCache)), 1);
-            assert.deepEqual(sequenceParser.filterPassiveObjects(lookupCache)['passive'], { content: {text: 'passive'}});
+            assert.strictEqual(_.size(sequenceParser.filterPassiveObjects(lookupCache, objectCache)), 2);
+            assert.deepEqual(sequenceParser.filterPassiveObjects(lookupCache, objectCache)['passive'], { content: {text: 'passive'}});
         });
     });
     

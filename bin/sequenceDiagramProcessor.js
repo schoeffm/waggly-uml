@@ -43,7 +43,7 @@ var collectMessages = function(tokenList, nodeLookupCache) {
     return messageLookupList;
 };
 
-var filterPassiveObjects = function(messageLookupCache) {
+var filterPassiveObjects = function(messageLookupCache, objectLookupCache) {
     var result = _.filter(messageLookupCache, function(value, key) { return value.text === 'create'; });
     
     var passiveObjects = {};
@@ -51,6 +51,9 @@ var filterPassiveObjects = function(messageLookupCache) {
     _.reduce(result, function(acc, element, key){
         acc[recordName(element.to.content.text)] = element.to;  // the to-object will be created lazily                
     }, passiveObjects);
+    
+    _.filter(objectLookupCache, function(object) { return _.startsWith(object.content.text,'actor:' ); })
+        .forEach(function(actor) { passiveObjects[recordName(actor.content.text)] = actor; });
     
     return passiveObjects;
 };
@@ -72,7 +75,7 @@ var toPicModel = function(tokenList) {
 
     var objectLookupCache = collectObjects(tokenList);
     var messageLookupCache = collectMessages(tokenList, objectLookupCache);
-    var passiveObjects = filterPassiveObjects(messageLookupCache);
+    var passiveObjects = filterPassiveObjects(messageLookupCache, objectLookupCache);
 
     // start the diagram by including the sequence.pic
     picLines.push('.PS');
@@ -81,8 +84,12 @@ var toPicModel = function(tokenList) {
     
     // first - add all (unique) objects to the diagram 
     _.forEach(objectLookupCache, function(value, key) {
-        var objectType = (passiveObjects[recordName(value.content.text)]) ? 'pobject' : 'object' ;
-        picLines.push(util.format('%s(%s,"%s",%d);', objectType, value.uid, key, 20));
+        if (_.startsWith(value.content.text, 'actor:')) {
+            picLines.push(util.format('%s(%s,"%s",%d);', 'actor', value.uid, key.split(':')[1], 20));
+        } else {
+            var objectType = (passiveObjects[recordName(value.content.text)]) ? 'pobject' : 'object' ;
+            picLines.push(util.format('%s(%s,"%s",%d);', objectType, value.uid, key, 20));
+        }
     });
     picLines.push('step();');
     
