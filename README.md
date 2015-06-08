@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/schoeffm/waggly-uml.svg?branch=master)](https://travis-ci.org/schoeffm/waggly-uml)
+[![npm version](https://badge.fury.io/js/wuml.svg)](http://badge.fury.io/js/wuml)
+[![License MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://img.shields.io/badge/license-MIT-brightgreen.svg)
 
 wuml
 =============
@@ -42,11 +44,12 @@ which gets converted to:
 ![Example2](https://github.com/schoeffm/waggly-uml/blob/master/doc/example.2.png)
 
 
-# Usage
+# Installation / Usage
 
 ### CLI tool
 
-Like [wsvg][wsvg_github], `wuml` provides a command line interface as well as the possibility to `require` it as an inline module in your node project
+Like [wsvg][wsvg_github], `wuml` provides a command line interface as well as the possibility to `require` it as an inline module in your node project (_in any case be sure to check the 
+prerequisites_)
 
 To install `wuml` from npm, run:
 
@@ -114,7 +117,7 @@ On Mac you can install both tools via [homebrew][brew]
 
 - ```brew install graphviz```
 - ```brew install librsvg```
-- ```brew install plotutils``
+- ```brew install plotutils```
 
 After that the upper mentioned `npm install wuml -g` should be enough to get started.
 
