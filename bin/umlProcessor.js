@@ -28,14 +28,20 @@ var processUmlOutput = function (inputData, config, callback) {
     } else {
         process = spawn('dot', ['-Tsvg']);
     }
-    var accumulator = '';
-    process.stdout.on('data', function (dotOutputData) { accumulator += dotOutputData.toString(); });
-    process.on('exit', function (exitCode) {
-        if (exitCode === 0) {
-            accumulator = accumulator.replace(/(g id="content" transform="translate)(\(.*?\))/gm, '$1(0.05,0.05)');
-            handleSVGData(accumulator, config, callback); 
+    var accumulator = [];
+    
+    process.stdout.on('data', function (outputData) { accumulator.push(outputData); });
+    
+    process.on('close', function (exitCode) {
+        if (exitCode === 0 && Buffer.isBuffer(accumulator[0])) {
+            var result = Buffer.concat(accumulator)
+                .toString('UTF-8')
+                .replace(/(g id="content" transform="translate)(\(.*?\))/gm, '$1(0.05,0.05)'); // sequence-diagram stuff
+            
+            handleSVGData(result, config, callback); // handle the result 
+        } else { 
+            console.error("SVG-creation wasn't successful - exitCode " + exitCode); 
         }
-        else { console.error("SVG-creation wasn't successful - exitCode " + exitCode); }
     });
     process.stderr.on('data', function (error) { console.error(error.toString()); });
     process.stdin.write(inputData, function () { process.stdin.end(); });
