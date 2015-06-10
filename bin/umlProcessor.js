@@ -84,7 +84,7 @@ var handleOutputData = function(outputData, config, callback) {
 };
 
 var transformToPNG = function (outputData, callback) {
-    var conv = im.convert(['svg:-', 'png:-']);
+    var conv = im.convert(['-trim', 'svg:-', 'png:-']);
 
     var accumulator = [];
     
