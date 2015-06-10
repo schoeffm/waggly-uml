@@ -1,18 +1,13 @@
 'use strict';
 
 var _ = require('lodash');
-var util = require('util');
-var graphviz = require('graphviz');
-var parser = require('./parser');
 var fs = require('fs');
-var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var wagglySvg = require('wsvg');
+var im = require('node-imagemagick');
 var classProcessor = require('./classDiagramProcessor');
 var sequenceProcessor = require('./sequenceDiagramProcessor');
 var notSupportedProcessor = require('./notSupportedDiagramProcessor');
-var im = require('imagemagick');
-var through = require('through');
 
 var types = {};
 types['class'] = classProcessor;
@@ -29,18 +24,18 @@ var processUmlOutput = function (inputData, config, callback) {
         process = spawn('dot', ['-Tsvg']);
     }
     var accumulator = [];
-    
+
     process.stdout.on('data', function (outputData) { accumulator.push(outputData); });
-    
+
     process.on('close', function (exitCode) {
         if (exitCode === 0 && Buffer.isBuffer(accumulator[0])) {
             var result = Buffer.concat(accumulator)
                 .toString('UTF-8')
                 .replace(/(g id="content" transform="translate)(\(.*?\))/gm, '$1(0.05,0.05)'); // sequence-diagram stuff
-            
+
             handleSVGData(result, config, callback); // handle the result 
-        } else { 
-            console.error("SVG-creation wasn't successful - exitCode " + exitCode); 
+        } else {
+            console.error("SVG-creation wasn't successful - exitCode " + exitCode);
         }
     });
     process.stderr.on('data', function (error) { console.error(error.toString()); });
@@ -62,8 +57,13 @@ var handleSVGData = function(svgInputData, config, callback) {
 
 var handleOutputData = function(outputData, config, callback) {
     // transformToPNG(outputData);
+    console.log(config);
     if (callback) {
-        callback(outputData);
+        if (config.format !== 'svg') {
+            transformToPNG(outputData, function(binaryData) { callback(binaryData); });
+        } else {
+            callback(outputData);
+        }
     } else if (config.output) {
         fs.writeFile(config.output.replace(/png$/, 'svg'), outputData, function (err) {
             if (err) return console.log(err);
@@ -77,17 +77,24 @@ var handleOutputData = function(outputData, config, callback) {
                             console.log("Couldn't remove the temporary file %s - please do this manually",
                                 config.output.replace(/png$/, 'svg'))
                         }
-        }); }); }   });
+                    }); }); }   });
     } else {
         console.log(outputData);
     }
 };
 
-var transformToPNG = function(outputData, callback) {
+var transformToPNG = function (outputData, callback) {
     var conv = im.convert(['svg:-', 'png:-']);
+
+    var accumulator = [];
     
-    conv.stdout.on('data', function(data) { console.log(data); });
-    conv.stdout.on('end', function() { console.log('done'); });
+    conv.stdout.on('data', function (data) {
+        accumulator.push(new Buffer(data, 'binary'));
+    });
+    conv.stdout.on('end', function () {
+        callback(Buffer.concat(accumulator));
+    });
+    
     conv.stdin.write(outputData);
     conv.stdin.end();
 };
@@ -110,4 +117,5 @@ module.exports.createDiagram = createDiagram;
 if (process.env.exportForTesting) {
     module.exports.handleSVGData = handleSVGData;
     module.exports.handleOutputData = handleOutputData;
+    module.exports.transformToPNG = transformToPNG;
 }
