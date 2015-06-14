@@ -48,7 +48,7 @@ var processUmlOutput = function (inputData, config, callback) {
 
 var handleSVGData = function(svgInputData, config, callback) {
 
-    svgInputData = svgPostProcessor.postProcess(svgInputData);
+    svgInputData = svgPostProcessor.postProcess(svgInputData, config);
 
     var waggly = config.waggly || false;
     var wagger = wagglySvg.create({

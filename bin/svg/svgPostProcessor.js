@@ -5,6 +5,41 @@ var dom = require('xmldom').DOMParser;
 var fs = require('fs');
 var c = require('./../constants');
 
+
+/**
+ * This post-processor will replace all ellipse-elements with 4 arc-paths to imitate that ellipse (but not as perfect
+ * as an ellipse, of course).
+ * 
+ * @param svgInput to be processed
+ */
+var ellipsisSubstitutionPostProcessor = function(svgInput, config) {
+    
+    if (config.waggly !== true) { return svgInput; }
+    
+    var pathTemplate = _.template('<path d="M<%= startX %>,<%= startY %> A<%= radiusX %>,<%= radiusY %> 0 0,0 <%= endX %>,<%= endY %>" style="stroke:black; fill:none;"></path>');
+    
+    var doc = new dom().parseFromString(svgInput);
+    var select = xpath.useNamespaces({"svg": "http://www.w3.org/2000/svg"});
+
+    _.forEach(select("//svg:ellipse", doc), function(node) {
+        var x = parseFloat(node.getAttribute('cx'));
+        var y = parseFloat(node.getAttribute('cy'));
+        var rx = parseFloat(node.getAttribute('rx'));
+        var ry = parseFloat(node.getAttribute('ry'));
+        
+        var startOffsets = {x: Math.floor(Math.random()*15) + 5, y: Math.floor(Math.random() * 4) + 2};
+        var endOffsets = {x: -1*Math.floor(Math.random()*15) + 5, y: 0};
+
+        node.parentNode.appendChild(new dom().parseFromString(pathTemplate({startX: (x + startOffsets.x), startY: (y-ry-startOffsets.y), radiusX: rx, radiusY: (ry+startOffsets.y), endX: (x-rx), endY: (y)})));
+        node.parentNode.appendChild(new dom().parseFromString(pathTemplate({startX: (x-rx), startY: (y), radiusX: rx, radiusY: ry, endX: x, endY: (y+ry)})));
+        node.parentNode.appendChild(new dom().parseFromString(pathTemplate({startX: x, startY: (y+ry), radiusX: rx, radiusY: ry, endX: (x+rx), endY: y})));
+        node.parentNode.appendChild(new dom().parseFromString(pathTemplate({startX: (x+rx), startY: y, radiusX: rx, radiusY: ry, endX: (x+endOffsets.x), endY: (y-ry)})));
+        
+        node.parentNode.removeChild(node);
+    });
+    return doc.toString();
+};
+
 /**
  * This post-processor will look for subgraphs which represents an actor-placeholder node. This is a node where the
  * containing label contains the prefix 'actor:' and will try to 
@@ -71,9 +106,10 @@ var actorSubstitutionPostProcessor = function(svgInput) {
     return doc.toString();
 };
 
-var postProcess = function(svgInput, callback) {
+var postProcess = function(svgInput, config) {
     var svgOutput = svgInput;
-    [actorSubstitutionPostProcessor].forEach(function(postProcessor) { svgOutput = postProcessor(svgOutput); });
+    [actorSubstitutionPostProcessor /*, ellipsisSubstitutionPostProcessor*/]
+            .forEach(function(postProcessor) { svgOutput = postProcessor(svgOutput, config); });
     return svgOutput;        
 };
 
@@ -81,4 +117,5 @@ module.exports.postProcess = postProcess;
 
 if (process.env.exportForTesting) {
     module.exports.actorSubstitutionPostProcessor = actorSubstitutionPostProcessor;
+    module.exports.ellipsisSubstitutionPostProcessor = ellipsisSubstitutionPostProcessor;
 }
