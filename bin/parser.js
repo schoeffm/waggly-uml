@@ -3,7 +3,8 @@
 var _ = require('lodash');
 var util = require('util');
 
-var tokenize = function(umlDescription) {
+
+var tokenize = function(umlDescription, delimiterConfig) {
     var words = [];
     var word = '';
     var shapeDepth = 0;
@@ -12,16 +13,16 @@ var tokenize = function(umlDescription) {
     };
     for (var i = 0; i < umlDescription.length; i++) {
         var character = umlDescription[i];
-        if (character === '[') { shapeDepth += 1; }
-        else if (character === ']') { shapeDepth -= 1; }
+        if (_.contains(delimiterConfig.startNodeSigns, character)) { shapeDepth += 1; }
+        else if (_.contains(delimiterConfig.endNodeSigns, character)) { shapeDepth -= 1; }
 
-        if (shapeDepth === 1 && character == '[') {
+        if (shapeDepth === 1 && _.contains(delimiterConfig.startNodeSigns, character)) {
             pushNonEmptyWords(word, words);
             word = character;
             continue;
         }
         word += character;
-        if (shapeDepth === 0 && character == ']') {
+        if (shapeDepth === 0 && _.contains(delimiterConfig.endNodeSigns, character)) {
             pushNonEmptyWords(word, words);
             word = '';
         }
@@ -32,7 +33,9 @@ var tokenize = function(umlDescription) {
     return words;
 };
 
-
+var isEllipse = function(token) {
+    return _.startsWith(token, '(') && _.endsWith(token, ')');
+};
 var isEdge = function(token) {
     return token.indexOf('-') >= 0;
 };
@@ -50,17 +53,27 @@ var isCluster = function(token) {
 
 
 var determineBackgroundColor = function(token) {
-    var regex = /\{bg:([A-Za-z0-9#]+)?\}\]$/;
+    var regex = /\{bg:([A-Za-z0-9#]+)?\}/;
     var match = regex.exec(token);
     return (match) ? match[1] : '';
 };
 
 var extractText = function(token, start, end) {
     var startIndex = token.indexOf(start) + 1;
-    var endIndex = (token.lastIndexOf('{bg') >= 0)
-        ? token.lastIndexOf('{bg')
-        : token.lastIndexOf(end);
-    return _.trim(token.substring(startIndex, endIndex));
+    var endIndex = token.lastIndexOf(end);
+
+    var result = token.substring(startIndex, endIndex);
+    return _.trim(result.replace(/\{.+\}/,''));
+};
+
+var processEllipse = function(ellipseToken) {
+    return {
+        type: 'ellipse',
+        content: {
+            background: determineBackgroundColor(ellipseToken),
+            text: extractText(ellipseToken, '(',')')
+        }
+    }; 
 };
 
 var processNote = function(noteToken) {
@@ -131,28 +144,49 @@ var processEdge = function(edgeToken) {
     return { type: 'edge', content: { left: leftResult, right: rightResult, style: style } }
 };
 
-var toDocumentModel = function(input) {
-    var tokenList = tokenize(input);
-    
-    var dotTokens = [];
-    for (var i = 0; i < tokenList.length; i++) {
-        var token = tokenList[i];
-        if (_.startsWith(token, '//')) {
-            continue;                               // skip comments
-        } else if (isNote(token)) {
-            dotTokens.push(processNote(token));    // process notes
-        } else if (isCluster(token)) {
-            dotTokens.push(processCluster(token)); // process cluster
-        } else if (isClass(token)) {
-            dotTokens.push(processClass(token));   // process classes
-        } else if (isEdge(token)) {
-            dotTokens.push(processEdge(token));    // process edges
-        }
-    }
-    return dotTokens;
-};
 
-module.exports.toDocumentModel = toDocumentModel;
+var Parser = function(configuration) {
+    console.log(configuration);
+    var self = this;
+    this.config = configuration;
+    
+    this.toDocumentModel = function(input) {
+        var tokenList = tokenize(input, self.config);
+
+        var dotTokens = [];
+        for (var i = 0; i < tokenList.length; i++) {
+            var token = tokenList[i];
+            if (_.startsWith(token, '//')) {
+                continue;                               // skip comments
+            } else if (isNote(token)) {
+                dotTokens.push(processNote(token));    // process notes
+            } else if (isEllipse(token)) {
+                dotTokens.push(processEllipse(token)); // process ellipse
+            } else if (isCluster(token)) {
+                dotTokens.push(processCluster(token)); // process cluster
+            } else if (isClass(token)) {
+                dotTokens.push(processClass(token));   // process classes
+            } else if (isEdge(token)) {
+                dotTokens.push(processEdge(token));    // process edges
+            }
+        }
+        return dotTokens;
+    };
+}
+
+/**
+ * @param config {
+ *      startNodeSigns : ['[', '('],
+ *      endNodeSigns : [']', ')'] 
+ *  }
+ * @returns {Parser}
+ */
+module.exports.create = function(config) {
+    return new Parser({
+        startNodeSigns : config.startNodeSigns || ['[', '('],   // default
+        endNodeSigns : config.endNodeSigns || [']', ')']        // default
+    }, config);                                                 // defaults can be overwritten
+};
 
 if (process.env.exportForTesting) {     // only export these things for testing
     module.exports.tokenize = tokenize;
@@ -163,9 +197,11 @@ if (process.env.exportForTesting) {     // only export these things for testing
     module.exports.isClass = isClass;
     module.exports.isEdge = isEdge;
     module.exports.isCluster = isCluster;
+    module.exports.isEllipse = isEllipse;
     
     module.exports.processNote = processNote;
     module.exports.processClass = processClass;
     module.exports.processCluster = processCluster;
     module.exports.processEdge = processEdge;
+    module.exports.processEllipse = processEllipse;
 }

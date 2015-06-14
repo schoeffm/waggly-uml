@@ -22,46 +22,58 @@ describe("'parser'", function() {
         "[Order]++-0..*>[LineItem] \n" +
         "[Order]-[note:Aggregate root.]";
 
+    var testUseCaseInput = "[actor:User]->(Customer)->(Order)";
+
     describe('When given an input-string, the toDocumentModel ...', function () {
+        
+        var underTest = parser.create({});
+        
         it('should create a corresponding model for the class-input', function () {
             assert.deepEqual(
-                parser.toDocumentModel(testClassInput)[0],
+                underTest.toDocumentModel(testClassInput)[0],
                 {type: 'record', content: {background: '', text: 'ICustomer|+name;+email|'}});
             assert.deepEqual(
-                parser.toDocumentModel(testClassInput)[1],
+                underTest.toDocumentModel(testClassInput)[1],
                 { type: 'edge', content: {left: {type: 'empty', text: ''}, right: {type: 'none', text: ''}, style: 'dashed'}});
             assert.deepEqual(
-                parser.toDocumentModel(testClassInput)[11],
+                underTest.toDocumentModel(testClassInput)[11],
                 {type: 'note', content: {background: '', text: 'Aggregate root.'}});
         });
         it('should create a corresponding model for the sequence-input', function () {
             assert.deepEqual(
-                parser.toDocumentModel(testSequenceInput)[0], 
+                underTest.toDocumentModel(testSequenceInput)[0], 
                 { type: 'record', content: { background: '', text: 'Patron' } });
             assert.deepEqual(
-                parser.toDocumentModel(testSequenceInput)[1],
+                underTest.toDocumentModel(testSequenceInput)[1],
                 { type: 'edge', content: {left: {type: 'none', text: ''}, right: {type: 'normal', text: 'order food'}, style: 'solid'}});
         });
     });
     
     describe('When given an input-string, the tokenizer ...', function () {
-        it('should extract 18 tokens for our test-sequence diagram ', function () {
-            assert.strictEqual(parser.tokenize(testSequenceInput).length, 18);
+        
+        var delimiterConfig = { startNodeSigns: ['[', '('], endNodeSigns: [']', ')']}
+        
+        it('should extract 18 (6 edges + 12 nodes) tokens for our test-sequence diagram ', function () {
+            assert.strictEqual(parser.tokenize(testSequenceInput, delimiterConfig).length, 18);
         });
         
-        it('should extract 13 tokens from our class-diagram input', function () {
-            assert.strictEqual(parser.tokenize(testClassInput).length, 13);
+        it('should extract 5 (3 nodes + 2 edges) tokens for our test-useCase diagram ', function () {
+            assert.strictEqual(parser.tokenize(testUseCaseInput, delimiterConfig).length, 5);
+        });
+        
+        it('should extract 13 (1 comment + 4 edges + 8 ndoes) tokens from our class-diagram input', function () {
+            assert.strictEqual(parser.tokenize(testClassInput, delimiterConfig).length, 13);
         });
         
         it('should place the tokens on expected positions based on the input-order', function () {
-            assert.strictEqual(parser.tokenize(testClassInput)[1], "[ICustomer|+name;+email|]");
-            assert.strictEqual(parser.tokenize(testClassInput)[2], "^-.-");
-            assert.strictEqual(parser.tokenize(testClassInput)[3], "[Customer]");
-            assert.strictEqual(parser.tokenize(testClassInput)[12], "[note:Aggregate root.]");
+            assert.strictEqual(parser.tokenize(testClassInput, delimiterConfig)[1], "[ICustomer|+name;+email|]");
+            assert.strictEqual(parser.tokenize(testClassInput, delimiterConfig)[2], "^-.-");
+            assert.strictEqual(parser.tokenize(testClassInput, delimiterConfig)[3], "[Customer]");
+            assert.strictEqual(parser.tokenize(testClassInput, delimiterConfig)[12], "[note:Aggregate root.]");
         });
         
         it('should not produce any empty tokens', function () {
-            for (var token in parser.tokenize(testClassInput)) {
+            for (var token in parser.tokenize(testClassInput, delimiterConfig)) {
                 assert(!_.isEmpty(token));
             }
         });
@@ -78,6 +90,18 @@ describe("'parser'", function() {
         });
         it('should detect a note-token - not matching', function () {
             assert.strictEqual(parser.isNote('[  note:'), false);
+        });
+        it('should detect a normal ellipse-token', function () {
+            assert.strictEqual(parser.isEllipse('(class)'), true);
+        });
+        it('should detect an empty ellipse-token', function () {
+            assert.strictEqual(parser.isEllipse('()'), true);
+        });
+        it('should not detect a ellipse-token that has leading spaces', function () {
+            assert.strictEqual(parser.isEllipse('  ( Text)'), false);
+        });
+        it('should not detect a ellipse-token if it does not end with )', function () {
+            assert.strictEqual(parser.isEllipse('( Text) '), false);
         });
         it('should detect a normal class-token', function () {
             assert.strictEqual(parser.isClass('[class]'), true);
@@ -114,17 +138,21 @@ describe("'parser'", function() {
 
     describe('When processing a nodes, we make use of a bunch of auxiliary functions, like ...', function() {
         describe('determineBackgroundColor - which ...', function() {
-            it('should extract the background as "cornsilk"', function () {
-                assert.strictEqual(parser.determineBackgroundColor(
-                        '[note: This is a damn long text {bg:cornsilk}]'),
+            it('should extract the class\' background as "cornsilk"', function () {
+                assert.strictEqual(parser.determineBackgroundColor('[note: This is a damn long text {bg:cornsilk}]'),
+                    'cornsilk');
+            });
+            it('should extract the ellipses background as "cornsilk"', function() {
+                assert.strictEqual(parser.determineBackgroundColor('(This is a damn long text {bg:cornsilk})'),
                     'cornsilk');
             });
         });
+        
         describe('processNote - which ...', function() {
-            it('should recognize notes with only one containing text and a background-color (the second will be ignored)', function () {
+            it('should recognize notes with only one containing text and a background-color (the last one will be picked)', function () {
                 assert.deepEqual(
                     parser.processNote('[note: This is a damn long text {bg:green}{bg:yellow}]').content,
-                    {background: 'yellow', text: 'This is a damn long text {bg:green}'});
+                    {background: 'green', text: 'This is a damn long text'});
             });
 
             it('should recognize a regular note containing text and bg-infos', function () {
@@ -143,12 +171,27 @@ describe("'parser'", function() {
                 assert.strictEqual(parser.processNote('[note: This is a damn long text]').type, 'note');
             });
         });
-        
+        describe('processEllipse - which ...', function() {
+            it('should create model-entries of type "ellipse"', function() {
+                assert.strictEqual(parser.processEllipse('(This is a Ellipse)').type, 'ellipse');                
+            });
+            it('should extract the contained text', function() {
+                assert.strictEqual(parser.processEllipse('(This is a Ellipse)').content.text, 'This is a Ellipse');
+            });
+            it('should extract background definitions', function() {
+                assert.strictEqual(parser.processEllipse('(This is a Ellipse {bg:green})').content.background, "green");
+            });
+        });
         describe('processClass - which ...', function() {
             it('should create model-entries of type "record"', function () {
                 assert.strictEqual(parser.processClass('[This is a Class]').type, 'record');
             });
-            // TODO
+            it('should extract the contained text', function() {
+                assert.strictEqual(parser.processClass('[This is |a Class]').content.text, 'This is |a Class');
+            });
+            it('should extract background definitions', function() {
+                assert.strictEqual(parser.processClass('(This is a Class {bg:green})').content.background, "green");
+            });
         });
 
         describe('processCluster - which ...', function() {

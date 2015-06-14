@@ -3,8 +3,9 @@
 var _ = require('lodash');
 var util = require('util');
 var graphviz = require('graphviz');
-var parser = require('./parser');
+var parser = require('./../parser').create({startNodeSigns : ['['], endNodeSigns : [']'] });
 var fs = require('fs');
+var c = require('./../constants');
 
 var recordName = function(label) {
     return _.trim(label.split('|')[0]);
@@ -14,12 +15,12 @@ var collectObjects = function(tokenList) {
     var nodeLookupCache = {};
     for (var i = 0; i < tokenList.length; i++) {
         var token = tokenList[i];
-        if (token.type === 'record') {
+        if (_.contains([c.NODE_TYPE_RECORD, c.NODE_TYPE_ELLIPSE], token.type)) {
             if (nodeLookupCache[recordName(token.content.text)]) {
                 continue;
             }
             nodeLookupCache[recordName(token.content.text)] = _.merge(token, {uid: 'Rec' + i});
-        }   }
+    }   }
     return nodeLookupCache;
 };
 
@@ -27,7 +28,7 @@ var collectMessages = function(tokenList, nodeLookupCache) {
     var messageLookupList = {};
     for (var i = 0; i < tokenList.length; i++) {
         var token = tokenList[i];
-        if (token.type === 'edge' && tokenList[i - 1] && tokenList[i + 1]) {
+        if (c.is(token.type, c.NODE_TYPE_EDGE) && tokenList[i - 1] && tokenList[i + 1]) {
             var text = token.content.left.text || token.content.right.text;
             var leftObject = tokenList[i - 1];
             var rightObject = tokenList[i + 1];

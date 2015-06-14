@@ -25,10 +25,12 @@
   "dependencies": {
     "commander": "~2.0.0",
     "graphviz": "0.0.8",
-    "node-imagemagick": "^0.1.8",
     "lodash": "^3.8.0",
+    "node-imagemagick": "^0.1.8",
     "through": "^2.3.7",
-    "wsvg": "^0.0.8"
+    "wsvg": "^0.0.8",
+    "xmldom": "^0.1.19",
+    "xpath": "0.0.9"
   },
   "devDependencies": {
     "mocha": "^2.2.4"

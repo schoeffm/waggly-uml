@@ -6,19 +6,21 @@ var _ = require('lodash');
 var umlProcessor = require('./umlProcessor');
 var fs = require('fs');
 var pjson = require('../package.json');
-var classProcessor = require('./classDiagramProcessor');
-var sequenceProcessor = require('./sequenceDiagramProcessor');
+var classProcessor = require('./dot/classDiagramProcessor');
+var useCaseProcessor = require('./dot/useCaseDiagramProcessor');
+var sequenceProcessor = require('./pic2plot/sequenceDiagramProcessor');
 var notSupportedProcessor = require('./notSupportedDiagramProcessor');
 
 var types = {};
 types['class'] = classProcessor;
 types['sequence'] = sequenceProcessor;
+types['usecase'] = useCaseProcessor;
 types[''] = notSupportedProcessor;
 
 program
     .version(pjson.version)
     .option('-f, --format [svg|png]', "Determine your prefered output format (default id 'svg')")
-    .option('-t, --type [class|sequence]', "Determines the graph-type to be created based on the given input (default is 'class')")
+    .option('-t, --type [class|sequence|usecase]', "Determines the graph-type to be created based on the given input (default is 'class')")
     .option('-c, --content <content>', "UML-image content as input-string")
     .option('-i, --input <path>', "Input UML description file")
     .option('-o, --output <path>', "Filename for the output diagram file")
@@ -28,8 +30,6 @@ program
     .parse(process.argv);
 
 // ------------------------ private functions ---------------------
-
-
 
 if (!process.argv.slice(2).length) {
     console.log('No command specified. See \'wuml --help\':');

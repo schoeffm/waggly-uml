@@ -5,13 +5,17 @@ var fs = require('fs');
 var spawn = require('child_process').spawn;
 var wagglySvg = require('wsvg');
 var im = require('node-imagemagick');
-var classProcessor = require('./classDiagramProcessor');
-var sequenceProcessor = require('./sequenceDiagramProcessor');
+var classProcessor = require('./dot/classDiagramProcessor');
+var sequenceProcessor = require('./pic2plot/sequenceDiagramProcessor');
+var useCaseProcessor = require('./dot/useCaseDiagramProcessor');
 var notSupportedProcessor = require('./notSupportedDiagramProcessor');
+var svgPostProcessor = require('./svg/svgPostProcessor');
+
 
 var types = {};
 types['class'] = classProcessor;
 types['sequence'] = sequenceProcessor;
+types['usecase'] = useCaseProcessor;
 types[''] = notSupportedProcessor;
 
 
@@ -43,6 +47,9 @@ var processUmlOutput = function (inputData, config, callback) {
 };
 
 var handleSVGData = function(svgInputData, config, callback) {
+
+    svgInputData = svgPostProcessor.postProcess(svgInputData);
+
     var waggly = config.waggly || false;
     var wagger = wagglySvg.create({
         waggly: waggly,
@@ -57,7 +64,6 @@ var handleSVGData = function(svgInputData, config, callback) {
 
 var handleOutputData = function(outputData, config, callback) {
     // transformToPNG(outputData);
-    console.log(config);
     if (callback) {
         if (config.format !== 'svg') {
             transformToPNG(outputData, function(binaryData) { callback(binaryData); });
