@@ -146,7 +146,6 @@ var processEdge = function(edgeToken) {
 
 
 var Parser = function(configuration) {
-    console.log(configuration);
     var self = this;
     this.config = configuration;
     
@@ -172,7 +171,7 @@ var Parser = function(configuration) {
         }
         return dotTokens;
     };
-}
+};
 
 /**
  * @param config {
