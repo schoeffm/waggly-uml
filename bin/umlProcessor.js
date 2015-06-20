@@ -53,6 +53,8 @@ var handleSVGData = function(svgInputData, config, callback) {
     var waggly = config.waggly || false;
     var wagger = wagglySvg.create({
         waggly: waggly,
+        wag_interval: (config.wagInterval || undefined),
+        wag_size: (config.wagSize || undefined),
         font_family: (waggly) ? (config.fontFamily || 'Dadhand') : undefined,
         font_size: (waggly) ? (config.fontSize || 10) : undefined
     }, function(waggledData) {
