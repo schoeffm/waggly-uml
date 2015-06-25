@@ -113,7 +113,7 @@ var createDiagram = function(umlAsString, config, callback) {
 
     var processor = (config.type && types[config.type]) ? types[config.type] : classProcessor;
 
-    processor.processString(umlAsString, function(output) {
+    processor.processString(umlAsString, config, function(output) {
         processUmlOutput(output, config, callback);
     });
 };

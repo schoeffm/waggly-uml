@@ -15,14 +15,40 @@ describe("'classDiagramProcessor'", function() {
         "[Customer]<>-orders*>[Order] \n" +
         "[Order]++-0..*>[LineItem] \n" +
         "[Order]-[note:Aggregate root.]";
-
+    
     describe("'toDotModel'", function() {
-        var expected = 'digraph G {\n' +
-        '  graph [ ranksep = 1, rankdir = LR ];\n' +
-        '  "A0" [ height = 0.5, fontsize = 10, margin = "0.20, 0.05", shape = record, label = "ICustomer\n|+name\n+email\n|\n" ];\n'+
+        
+        var modelDefinition = [{type: 'record', content: {background: '', text: 'ICustomer|+name;+email|'}}];
+        var expectedDotModel = 'digraph G {\n' +
+        '  graph [ ranksep = 1, rankdir = LR, splines = \"spline\" ];\n' +
+        '  "A0" [ height = 0.5, fontsize = 10, margin = "0.20, 0.05", shape = record, label = "ICustomer\\n|+name\\n+email\\n|\\n" ];\n'+
         '}\n';
-        console.log(expected ,classParser.toDotModel([{type: 'record', content: {background: '', text: 'ICustomer|+name;+email|'}}]));
-        // assert.equal(expected ,classParser.toDotModel([{type: 'record', content: {background: '', text: 'ICustomer|+name;+email|'}}]));
+        
+        it('Dot-Model will be created based on the given input', function() {
+            assert.equal(expectedDotModel ,classParser.toDotModel(modelDefinition,{}));
+        });
+        
+        it('when given an orientation this one will be used instead of the default one', function() {
+            // given
+            var expected = 'digraph G {\n' +
+                '  graph [ ranksep = 1, rankdir = TD, splines = \"spline\" ];\n' +
+                '  "A0" [ height = 0.5, fontsize = 10, margin = "0.20, 0.05", shape = record, label = "{ ICustomer\\n|+name\\n+email\\n|\\n }" ];\n'+
+                '}\n';
+            
+            // when
+            var result = classParser.toDotModel(modelDefinition, { orientation: 'TD', spline: 'ortho' });
+            
+            // then
+            assert.equal(expected, result);
+        });
+
+        it('in case of not-supported config-entries defaults will be taken', function() {
+            // when
+            var result = classParser.toDotModel(modelDefinition, { orientation: 'TLDR', spline: 'foo' });
+
+            // then
+            assert.equal(expectedDotModel, result);
+        });
     });
     
     

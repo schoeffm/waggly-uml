@@ -133,7 +133,11 @@ var toPicModel = function(tokenList) {
  * @param input a string representing the uml-syntax
  * @param callback which gets called when the transformation is done
  */
-var processString = function(input, callback) {
+var processString = function(input, config, callback) {
+    if (typeof config === 'function' && callback === undefined) {
+        callback = config;
+        config = {};
+    }
     if (input === undefined) { throw new Error("You must provide an 'input'-string in order to be of any value"); }
     if (callback === undefined) { throw new Error("You must provide a 'callback' in order to process the transformed result"); }
 
@@ -144,7 +148,11 @@ var processString = function(input, callback) {
  * @param filePath path to the uml-input-file to be transformed (convenience-method for processString())
  * @param callback which gets called when the transformation is done
  */
-var processFile = function(filePath, callback) {
+var processFile = function(filePath, config, callback) {
+    if (typeof config === 'function' && callback === undefined) {
+        callback = config;
+        config = {};
+    }
     if (filePath === undefined) { throw new Error("You must provide a 'filePath' in order to be of any value"); }
     if (callback === undefined) { throw new Error("You must provide a 'callback' in order to process the transformed result"); }
 

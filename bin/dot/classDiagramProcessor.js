@@ -15,13 +15,20 @@ var configTemplate = {
     'margin': "0.20, 0.05"
 };
 
-var toDotModel = function(tokenList) {
-    var orientation = (tokenList.length > 5) ? 'TD': 'LR';
+var toDotModel = function(tokenList, config) {
+    var orientation = (config.orientation && _.contains(['TD', 'LR'], config.orientation)) 
+        ? config.orientation 
+        : ((tokenList.length > 5) ? 'TD' : 'LR');
+    var splineType = (config.splines && _.contains(['ortho', 'spline'], config.splines)) 
+        ? config.splines 
+        : 'spline';
+    
     var nodeLookupCache = {};
     
     var g = graphviz.digraph("G");
     g.set('ranksep' , 1);
     g.set('rankdir', orientation);
+    g.set('splines', splineType);
     
     var appendNodes = function(tokenList, g, nodeLookupCache) {
         for (var i = 0; i < tokenList.length; i++) {
@@ -68,23 +75,31 @@ var toDotModel = function(tokenList) {
  * @param input a string representing the uml-syntax
  * @param callback which gets called when the transformation is done
  */
-var processString = function(input, callback) {
+var processString = function(input, config, callback) {
+    if (typeof config === 'function' && callback === undefined) {
+        callback = config;
+        config = {};
+    }
     if (input === undefined) { throw new Error("You must provide an 'input'-string in order to be of any value"); }
     if (callback === undefined) { throw new Error("You must provide a 'callback' in order to process the transformed result"); }
     
-    callback(toDotModel(parser.toDocumentModel(input)));
+    callback(toDotModel(parser.toDocumentModel(input), config));
 };
 
 /**
  * @param filePath path to the uml-input-file to be transformed (convenience-method for processString())
  * @param callback which gets called when the transformation is done
  */
-var processFile = function(filePath, callback) {
+var processFile = function(filePath, config, callback) {
+    if (typeof config === 'function' && callback === undefined) {
+        callback = config; 
+        config = {};
+    }
     if (filePath === undefined) { throw new Error("You must provide a 'filePath' in order to be of any value"); }
     if (callback === undefined) { throw new Error("You must provide a 'callback' in order to process the transformed result"); }
     
     fs.readFile(filePath, {encoding: 'utf-8'}, function(err, data) {
-        callback(toDotModel(parser.toDocumentModel(data)));    
+        callback(toDotModel(parser.toDocumentModel(data), config));    
     });
 };
 

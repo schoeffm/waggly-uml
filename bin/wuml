@@ -19,11 +19,13 @@ types[''] = notSupportedProcessor;
 
 program
     .version(pjson.version)
-    .option('-f, --format [svg|png]', "Determine your prefered output format (default id 'svg')")
+    .option('-f, --format [svg|png]', "Optional: Determine your prefered output format (default id 'svg')")
     .option('-t, --type [class|sequence|usecase]', "Determines the graph-type to be created based on the given input (default is 'class')")
     .option('-c, --content <content>', "UML-image content as input-string")
     .option('-i, --input <path>', "Input UML description file")
     .option('-o, --output <path>', "Filename for the output diagram file")
+    .option('-O, --orientation [LR|TD]', "Optional: Orientation (Left-To-Right or Top-Down) (default will be determined automatically)")
+    .option('-S, --splines [ortho|spline]', "Optional: What kind of associations will be drawn (default is 'spline')")
     .option('-w, --waggly', "Turns on the waggly-mode")
     .option('--fontFamily <font>', "Set the output font-family (i.e. Purisa or Dadhand)")
     .option('--fontSize <size>', "Set the size of the font to be used")
@@ -41,9 +43,9 @@ if (!process.argv.slice(2).length) {
 var processor = (program.type && types[program.type]) ? types[program.type] : classProcessor;
 
 if (program.content) {
-    processor.processString(program.content, function(output) { umlProcessor.processUmlOutput(output, program); });
+    processor.processString(program.content, program, function(output) { umlProcessor.processUmlOutput(output, program); });
 } else if (program.input) {
-    processor.processFile(program.input, function(output) { umlProcessor.processUmlOutput(output, program); });
+    processor.processFile(program.input, program, function(output) { umlProcessor.processUmlOutput(output, program); });
 } else {
     console.log('No input specified. See \'wuml --help\':');
     program.outputHelp();
