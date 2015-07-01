@@ -186,6 +186,18 @@ var processCluster = function(clusterTocken) {
     };
 };
 
+var collectUntil = function(token, delimiter, reverse) {
+    var reverse = reverse || false;
+    var result = '';
+    var word = (reverse) ? token.split("").reverse().join("") : token;
+    
+    for (var i = 0; i < word.length; i++) {
+        if (word[i] !== delimiter) { result += word[i]; }
+        else { break; }
+    }
+    return (reverse) ? result.split("").reverse().join("") : result;
+}
+
 /**
  * This method processes an edge. And since edges can be quite complex this method has to do a bunch of things.
  *
@@ -196,32 +208,43 @@ var processEdge = function(edgeToken) {
     var isDashed = function(edge) { return edge.indexOf('-.-') >= 0; }
     
     var style = (isDashed(edgeToken)) ? 'dashed' : 'solid';
-    var edges = (isDashed(edgeToken)) ? edgeToken.split('-.-') : edgeToken.split('-');
-
-    var left = edges[0];
-    var right = edges[1];
 
     var leftResult;
     var rightResult;
 
     // take care of the left part of the edge
-    if (_.startsWith(left, '<>')) { leftResult = { type: 'odiamond', text: left.substring(2,left.length)}; }
-    else if (_.startsWith(left, '++')) { leftResult = { type: 'diamond', text: left.substring(2,left.length)}; }
-    else if (_.startsWith(left, '+')) { leftResult = { type: 'odiamond', text: left.substring(1,left.length)}; }
-    else if (_.startsWith(left, '<') || _.startsWith(left, '>')) { leftResult = { type: 'normal', text: left.substring(1,left.length)}; }
-    else if (_.startsWith(left, '^')) { leftResult = { type: 'empty', text: left.substring(1,left.length)}; }
-    else { leftResult = { type: 'none', text: left }; }
+    if (_.startsWith(edgeToken, '<>')) { leftResult = { 
+        type: 'odiamond', text: collectUntil(edgeToken.substring(2), '-')}; 
+    } else if (_.startsWith(edgeToken, '++')) { leftResult = { 
+        type: 'diamond', text: collectUntil(edgeToken.substring(2), '-')}; 
+    } else if (_.startsWith(edgeToken, '+')) { leftResult = { 
+        type: 'odiamond', text: collectUntil(edgeToken.substring(1), '-')}; 
+    } else if (_.startsWith(edgeToken, '<') || _.startsWith(edgeToken, '>')) { 
+        leftResult = { type: 'normal', text: collectUntil(edgeToken.substring(1),'-')}; 
+    } else if (_.startsWith(edgeToken, '^')) { leftResult = { 
+        type: 'empty', text: collectUntil(edgeToken.substring(1), '-')}; 
+    } else { leftResult = { type: 'none', text: collectUntil(edgeToken,'-') }; }
 
     // now deal with the right part of the edge
-    if (_.endsWith(right, '<>')) { rightResult = { type: 'odiamond', text: right.substring(0,right.length - 2)}; }
-    else if (_.endsWith(right, '++')) { rightResult = { type: 'diamond', text: right.substring(0,right.length - 2)}; }
-    else if (_.endsWith(right, '+')) { rightResult = { type: 'odiamond', text: right.substring(0,right.length - 1)}; }
-    else if (_.endsWith(right, '<') || _.endsWith(right, '>')) { rightResult = { type: 'normal', text: right.substring(0,right.length - 1)}; }
-    else if (_.endsWith(right, '^')) { rightResult = { type: 'empty', text: right.substring(0,right.length - 1)}; }
-    else { rightResult = { type: 'none', text: right }; }
+    if (_.endsWith(edgeToken, '<>')) { rightResult = { 
+        type: 'odiamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 2), '-', true)}; 
+    } else if (_.endsWith(edgeToken, '++')) { rightResult = { 
+        type: 'diamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 2), '-', true)}; 
+    } else if (_.endsWith(edgeToken, '+')) { rightResult = { 
+        type: 'odiamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), '-', true)}; 
+    } else if (_.endsWith(edgeToken, '<') || _.endsWith(edgeToken, '>')) { 
+        rightResult = { type: 'normal', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), '-', true)}; 
+    } else if (_.endsWith(edgeToken, '^')) { rightResult = { 
+        type: 'empty', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), '-', true)}; 
+    } else { rightResult = { type: 'none', text: collectUntil(edgeToken, '-', true) }; }
 
     // finally combine everything to a complete edge-representation
-    return { type: 'edge', content: { left: leftResult, right: rightResult, style: style } }
+    return { 
+        type: 'edge', content: { 
+            left: leftResult, 
+            right: rightResult, 
+            style: (isDashed(edgeToken)) ? 'dashed' : 'solid'
+    }   }
 };
 
 /**
