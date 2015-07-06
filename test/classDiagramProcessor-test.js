@@ -14,7 +14,8 @@ describe("'classDiagramProcessor'", function() {
         "[ICustomer|+name;+email|]^-.-[Customer] \n" +
         "[Customer]<>-orders*>[Order] \n" +
         "[Order]++-0..*>[LineItem] \n" +
-        "[Order]-[note:Aggregate root.]";
+        "[Order]-[note:Aggregate root.] \n" +
+        "[My Cluster [Order][Customer]{bg:green}]->[Bar]";
     
     describe("'toDotModel'", function() {
         
@@ -81,6 +82,13 @@ describe("'classDiagramProcessor'", function() {
     });
     
     describe('End-Goal', function() {
+        it('foo', function(done) {
+            classParser.processString(testClassInput, function(outputString) {
+                console.log(outputString);
+                done();
+            });
+        });
+        
         it('Hack the planet', function () {
             classParser.processString(testClassInput, function(outputString) {
                 fs.writeFile('test.dot', outputString, function(err) {

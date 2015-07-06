@@ -96,7 +96,8 @@ var nodeHandlers = {
         nodeLookupCache[recordName(token.content.text)] = subGraph;
         subGraph.set('label', token.content.text);
         subGraph.set('fontsize', 10);
-
+        _setBackgroundIfDefined(subGraph, token);
+        
         _.forEach(token.content.nodeNames, function (element) {
             if (nodeLookupCache[recordName(element)]) {
                 subGraph.addNode(nodeLookupCache[element].id);

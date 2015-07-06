@@ -3,7 +3,10 @@
 var _ = require('lodash');
 var util = require('util');
 var graphviz = require('graphviz');
-var parser = require('./../parser').create({startNodeSigns : ['[', '('], endNodeSigns : [']', ')'] });
+var parser = require('./../parser').create({
+    startNodeSigns : ['[', '('], 
+    endNodeSigns : [']', ')'] 
+});
 var fs = require('fs');
 var c = require('./../constants');
 var dotUtils = require('./commonDot');
@@ -15,20 +18,16 @@ var configTemplate = {
     'margin': "0.20, 0.05"
 };
 
+/**
+ * Takes the given token-list and turns it into a dot-representation (which is returned as 
+ * a string).
+ * 
+ * @param tokenList representing the wuml-definition - the token should be in order
+ * @param config determines some of the dot-relevant configs 
+ *      { orientation: '[TD|LR]', splines: '[ortho|spline]'  }
+ * @returns {String} as input for dot
+ */
 var toDotModel = function(tokenList, config) {
-    var orientation = (config.orientation && _.contains(['TD', 'LR'], config.orientation)) 
-        ? config.orientation 
-        : ((tokenList.length > 5) ? 'TD' : 'LR');
-    var splineType = (config.splines && _.contains(['ortho', 'spline'], config.splines)) 
-        ? config.splines 
-        : 'spline';
-    
-    var nodeLookupCache = {};
-    
-    var g = graphviz.digraph("G");
-    g.set('ranksep' , 1);
-    g.set('rankdir', orientation);
-    g.set('splines', splineType);
     
     var appendNodes = function(tokenList, g, nodeLookupCache) {
         for (var i = 0; i < tokenList.length; i++) {
@@ -63,8 +62,25 @@ var toDotModel = function(tokenList, config) {
                         ? 'dashed' : tokenList[j].content.style)
                 }, g, nodeLookupCache);
     }   }   };
-        
-    // call all appenders
+
+    // determine configs as provided by the caller (if given at all)
+    var orientation = (config.orientation && _.contains(['TD', 'LR'], config.orientation))
+        ? config.orientation
+        : ((tokenList.length > 5) ? 'TD' : 'LR');
+    var splineType = (config.splines && _.contains(['ortho', 'spline'], config.splines))
+        ? config.splines
+        : 'spline';
+
+    // this map collects all nodes as we progress through the token-list
+    var nodeLookupCache = {};
+
+    // first of all we're createing a new Graph-representation and set some generall configs
+    var g = graphviz.digraph("G");
+    g.set('ranksep' , 1);
+    g.set('rankdir', orientation);
+    g.set('splines', splineType);
+    
+    // now call all appenders - they will enhance the given graph
     _.forEach([appendNodes, appendEdges], function(func) { func(tokenList, g, nodeLookupCache); });
     
     // and return the finished graph in dot-syntax
