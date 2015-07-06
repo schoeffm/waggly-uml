@@ -96,7 +96,7 @@ var determineBackgroundColor = function(token) {
  * string wrapped between curly braces, give this string as {@code token} and the curly braces as start- and end-
  * signs respectively
  *
- * @param toekn (string)    to be trimmed (so it contains the text we're interested in)
+ * @param token (string)    to be trimmed (so it contains the text we're interested in)
  * @param start (string)    the start-sign (or substring)
  * @param end (string)      the end-sign (or substring)
  * @return (string) the bare text
@@ -186,17 +186,35 @@ var processCluster = function(clusterTocken) {
     };
 };
 
-var collectUntil = function(token, delimiter, reverse) {
-    var reverse = reverse || false;
+/**
+ * 
+ * @param token
+ * @param delimiter
+ * @param lookAt 
+ * @returns {string}
+ */
+var collectUntil = function(token, delimiter, lookAt) {
+    var reverted = (lookAt && lookAt === LookAt.END ) || false;
     var result = '';
-    var word = (reverse) ? token.split("").reverse().join("") : token;
-    
-    for (var i = 0; i < word.length; i++) {
-        if (word[i] !== delimiter) { result += word[i]; }
-        else { break; }
+    var word = (reverted) ? token.split("").reverse().join("") : token;
+
+    if (lookAt === LookAt.BETWEEN) {
+        var regex = new RegExp(delimiter + '([,_:;$!&\\(\\)a-zA-Z0-9 \-]*)' + delimiter, 'g');
+        result = word.match(regex);
+        return _.trim(result, delimiter);
+    } else {
+        for (var i = 0; i < word.length; i++) {
+            if (word[i] !== delimiter) { result += word[i]; }
+            else { break; }
+        }
+        return (reverted) ? result.split("").reverse().join("") : result;
     }
-    return (reverse) ? result.split("").reverse().join("") : result;
-}
+};
+var LookAt = {
+    START : 'start',
+    END : 'end',
+    BETWEEN : 'between'
+};
 
 /**
  * This method processes an edge. And since edges can be quite complex this method has to do a bunch of things.
@@ -205,42 +223,42 @@ var collectUntil = function(token, delimiter, reverse) {
  * @return (object) a complete object-representation of an edge
  */
 var processEdge = function(edgeToken) {
-    var isDashed = function(edge) { return edge.indexOf('-.-') >= 0; }
-    
-    var style = (isDashed(edgeToken)) ? 'dashed' : 'solid';
+    var isDashed = function(edge) { return edge.indexOf('-.-') >= 0; };
+    var EDGE_DELIMITER = '-';
 
     var leftResult;
     var rightResult;
 
     // take care of the left part of the edge
     if (_.startsWith(edgeToken, '<>')) { leftResult = { 
-        type: 'odiamond', text: collectUntil(edgeToken.substring(2), '-')}; 
+        type: 'odiamond', text: collectUntil(edgeToken.substring(2), EDGE_DELIMITER)}; 
     } else if (_.startsWith(edgeToken, '++')) { leftResult = { 
-        type: 'diamond', text: collectUntil(edgeToken.substring(2), '-')}; 
+        type: 'diamond', text: collectUntil(edgeToken.substring(2), EDGE_DELIMITER)}; 
     } else if (_.startsWith(edgeToken, '+')) { leftResult = { 
-        type: 'odiamond', text: collectUntil(edgeToken.substring(1), '-')}; 
+        type: 'odiamond', text: collectUntil(edgeToken.substring(1), EDGE_DELIMITER)}; 
     } else if (_.startsWith(edgeToken, '<') || _.startsWith(edgeToken, '>')) { 
-        leftResult = { type: 'normal', text: collectUntil(edgeToken.substring(1),'-')}; 
+        leftResult = { type: 'normal', text: collectUntil(edgeToken.substring(1),EDGE_DELIMITER)}; 
     } else if (_.startsWith(edgeToken, '^')) { leftResult = { 
-        type: 'empty', text: collectUntil(edgeToken.substring(1), '-')}; 
-    } else { leftResult = { type: 'none', text: collectUntil(edgeToken,'-') }; }
+        type: 'empty', text: collectUntil(edgeToken.substring(1), EDGE_DELIMITER)}; 
+    } else { leftResult = { type: 'none', text: collectUntil(edgeToken,EDGE_DELIMITER) }; }
 
     // now deal with the right part of the edge
     if (_.endsWith(edgeToken, '<>')) { rightResult = { 
-        type: 'odiamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 2), '-', true)}; 
+        type: 'odiamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 2), EDGE_DELIMITER, LookAt.END)}; 
     } else if (_.endsWith(edgeToken, '++')) { rightResult = { 
-        type: 'diamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 2), '-', true)}; 
+        type: 'diamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 2), EDGE_DELIMITER, LookAt.END)}; 
     } else if (_.endsWith(edgeToken, '+')) { rightResult = { 
-        type: 'odiamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), '-', true)}; 
+        type: 'odiamond', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), EDGE_DELIMITER, LookAt.END)}; 
     } else if (_.endsWith(edgeToken, '<') || _.endsWith(edgeToken, '>')) { 
-        rightResult = { type: 'normal', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), '-', true)}; 
+        rightResult = { type: 'normal', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), EDGE_DELIMITER, LookAt.END)}; 
     } else if (_.endsWith(edgeToken, '^')) { rightResult = { 
-        type: 'empty', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), '-', true)}; 
-    } else { rightResult = { type: 'none', text: collectUntil(edgeToken, '-', true) }; }
+        type: 'empty', text: collectUntil(edgeToken.substring(0,edgeToken.length - 1), EDGE_DELIMITER, LookAt.END)}; 
+    } else { rightResult = { type: 'none', text: collectUntil(edgeToken, EDGE_DELIMITER, LookAt.END) }; }
 
     // finally combine everything to a complete edge-representation
     return { 
-        type: 'edge', content: { 
+        type: 'edge', content: {
+            text: collectUntil(edgeToken, EDGE_DELIMITER, LookAt.BETWEEN),
             left: leftResult, 
             right: rightResult, 
             style: (isDashed(edgeToken)) ? 'dashed' : 'solid'
@@ -320,4 +338,7 @@ if (process.env.exportForTesting) {     // only export these things for testing
     module.exports.processCluster = processCluster;
     module.exports.processEdge = processEdge;
     module.exports.processEllipse = processEllipse;
+    
+    module.exports.collectUntil = collectUntil;
+    module.exports.LookAt = LookAt;
 }

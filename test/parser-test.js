@@ -20,7 +20,8 @@ describe("'parser'", function() {
         "[ICustomer|+name;+email|]^-.-[Customer] \n" +
         "[Customer]<>-orders*>[Order] \n" +
         "[Order]++-0..*>[LineItem] \n" +
-        "[Order]-[note:Aggregate root.]";
+        "[Order]-[note:Aggregate root.] \n" +
+        "[My Cluster [Order][Customer]]->[Bar]";    
 
     var testUseCaseInput = "[actor:User]->(Customer)->(Order)";
 
@@ -34,10 +35,18 @@ describe("'parser'", function() {
                 {type: 'record', content: {background: '', text: 'ICustomer|+name;+email|'}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[1],
-                { type: 'edge', content: {left: {type: 'empty', text: ''}, right: {type: 'none', text: ''}, style: 'dashed'}});
+                { type: 'edge', content: {text: '', left: {type: 'empty', text: ''}, right: {type: 'none', text: ''}, style: 'dashed'}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[11],
                 {type: 'note', content: {background: '', text: 'Aggregate root.'}});
+            assert.deepEqual(
+                underTest.toDocumentModel(testClassInput)[12],
+                {type: 'cluster', content: {background: '', text: 'My Cluster', nodeNames:['Order','Customer']}});
+            assert.deepEqual(
+                underTest.toDocumentModel(testClassInput)[13].type, 'edge');
+            assert.deepEqual(
+                underTest.toDocumentModel(testClassInput)[14],
+                {type: 'record', content: {background: '', text: 'Bar'}});
         });
         it('should create a corresponding model for the sequence-input', function () {
             assert.deepEqual(
@@ -45,7 +54,7 @@ describe("'parser'", function() {
                 { type: 'record', content: { background: '', text: 'Patron' } });
             assert.deepEqual(
                 underTest.toDocumentModel(testSequenceInput)[1],
-                { type: 'edge', content: {left: {type: 'none', text: ''}, right: {type: 'normal', text: 'order food'}, style: 'solid'}});
+                { type: 'edge', content: {text: '', left: {type: 'none', text: ''}, right: {type: 'normal', text: 'order food'}, style: 'solid'}});
         });
     });
     
@@ -61,8 +70,8 @@ describe("'parser'", function() {
             assert.strictEqual(parser.tokenize(testUseCaseInput, delimiterConfig).length, 5);
         });
         
-        it('should extract 13 (1 comment + 4 edges + 8 ndoes) tokens from our class-diagram input', function () {
-            assert.strictEqual(parser.tokenize(testClassInput, delimiterConfig).length, 13);
+        it('should extract 13 (1 comment + 5 edges + 10 nodes) tokens from our class-diagram input', function () {
+            assert.strictEqual(parser.tokenize(testClassInput, delimiterConfig).length, 16);
         });
         
         it('should place the tokens on expected positions based on the input-order', function () {
@@ -147,6 +156,35 @@ describe("'parser'", function() {
                     'cornsilk');
             });
         });
+
+        describe('collectUntil - which ...', function() {
+            
+            var edgeSignDelimiter = '-';
+            var testToken = 'This_should_Be a test ----Something in Between---I am_useless--And something at the End';
+            
+            it('should extract the text at the beginning of an edge until the first edge sign -', function() {
+                assert.strictEqual(parser.collectUntil(testToken, edgeSignDelimiter, parser.LookAt.START), 'This_should_Be a test ');                    
+            });
+            it('should extract the text at the beginning (since this is the default) of an edge until configured delimiter', function() {
+                assert.strictEqual(parser.collectUntil(testToken, '_'), 'This');
+            });
+            it('should extract the text at the end of an edge', function() {
+                assert.strictEqual(parser.collectUntil(testToken, edgeSignDelimiter, parser.LookAt.END), 'And something at the End');
+            });
+            it('should eagerly extract the text in between the delimiter', function() {
+                assert.strictEqual(parser.collectUntil(testToken, edgeSignDelimiter, parser.LookAt.BETWEEN), 
+                    'Something in Between---I am_useless');
+            });
+            it('should extract the text in between the delimiter', function() {
+                assert.strictEqual(parser.collectUntil('_This is a Test_', '_', parser.LookAt.BETWEEN),
+                    'This is a Test');
+            });
+            it('should extract nothing if there is nothing to be extracted', function() {
+                assert.strictEqual(parser.collectUntil('Foo----Bar', '-', parser.LookAt.BETWEEN),'');
+                assert.strictEqual(parser.collectUntil('Foo----Bar', '-', parser.LookAt.START),'Foo');
+                assert.strictEqual(parser.collectUntil('Foo----Bar', '-', parser.LookAt.END),'Bar');
+            })
+        });
         
         describe('processNote - which ...', function() {
             it('should recognize notes with only one containing text and a background-color (the last one will be picked)', function () {
@@ -208,7 +246,6 @@ describe("'parser'", function() {
                     }
                 );
             });
-            // TODO
         });
 
         describe('processEdge - which ...', function() {
@@ -253,4 +290,5 @@ describe("'parser'", function() {
             });
         });
     });
+    
 });
