@@ -42,6 +42,14 @@ var edgeHandlers = {
         if (c.is(edgeToken.type, c.NODE_TYPE_EDGE) && tokenBefore && tokenAfter) {
             var leftNode = nodeLookupCache[recordName(tokenBefore.content.text)];
             var rightNode = nodeLookupCache[recordName(tokenAfter.content.text)];
+            if (tokenBefore.type === 'cluster') {
+                config = _.merge( { ltail : nodeLookupCache[recordName(tokenBefore.content.text)].id }, config );
+                leftNode = nodeLookupCache[recordName(tokenBefore.content.nodeNames[0])];
+            }
+            if (tokenAfter.type === 'cluster') {
+                config = _.merge( { lhead: nodeLookupCache[recordName(tokenAfter.content.text)].id }, config );
+                rightNode = nodeLookupCache[recordName(tokenAfter.content.nodeNames[0])];
+            }
 
             g.addEdge(leftNode, rightNode, config);
         }
@@ -68,7 +76,9 @@ var nodeHandlers = {
         if (nodeLookupCache[recordName(token.content.text)]) { return; }
         var uid = 'A' + _.size(nodeLookupCache);
         var node = g.addNode(uid, config);
+        
         _setBackgroundIfDefined(node, token);
+        
         nodeLookupCache[recordName(token.content.text)] = node;
     },
     note: function(token, g, nodeLookupCache) {
@@ -82,10 +92,9 @@ var nodeHandlers = {
             'margin': "0.20, 0.05",
             label: dotUtils.prepareLabel(token.content.text, g.get('rankdir'))
         });
-        if (token.content.background) {
-            node.set('style', 'filled');
-            node.set('fillcolor', token.content.background);
-        }
+        
+        _setBackgroundIfDefined(node, token);
+        
         nodeLookupCache[recordName(token.content.text)] = node;
     },
     

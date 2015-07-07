@@ -56,6 +56,7 @@ var toDotModel = function(tokenList, config) {
                     'taillabel': tokenList[j].content.left.text,
                     'arrowhead': tokenList[j].content.right.type,
                     'headlabel': tokenList[j].content.right.text,
+                    'label': tokenList[j].content.text,
                     'labeldistance': 2,
                     'fontsize': 10,
                     'style': ((tokenList[j - 1].type === 'note' || tokenList[j + 1].type === 'note') 
@@ -76,6 +77,7 @@ var toDotModel = function(tokenList, config) {
 
     // first of all we're createing a new Graph-representation and set some generall configs
     var g = graphviz.digraph("G");
+    g.set('compound' , true);
     g.set('ranksep' , 1);
     g.set('rankdir', orientation);
     g.set('splines', splineType);

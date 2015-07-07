@@ -15,13 +15,13 @@ describe("'classDiagramProcessor'", function() {
         "[Customer]<>-orders*>[Order] \n" +
         "[Order]++-0..*>[LineItem] \n" +
         "[Order]-[note:Aggregate root.] \n" +
-        "[My Cluster [Order][Customer]{bg:green}]->[Bar]";
+        "[My Cluster [Order][Customer]{bg:green}]->[Foo[LineItem]]";
     
     describe("'toDotModel'", function() {
         
         var modelDefinition = [{type: 'record', content: {background: '', text: 'ICustomer|+name;+email|'}}];
         var expectedDotModel = 'digraph G {\n' +
-        '  graph [ ranksep = 1, rankdir = LR, splines = \"spline\" ];\n' +
+        '  graph [ compound = true, ranksep = 1, rankdir = LR, splines = \"spline\" ];\n' +
         '  "A0" [ height = 0.5, fontsize = 10, margin = "0.20, 0.05", shape = record, label = "ICustomer\\n|+name\\n+email\\n|\\n" ];\n'+
         '}\n';
         
@@ -32,7 +32,7 @@ describe("'classDiagramProcessor'", function() {
         it('when given an orientation this one will be used instead of the default one', function() {
             // given
             var expected = 'digraph G {\n' +
-                '  graph [ ranksep = 1, rankdir = TD, splines = \"spline\" ];\n' +
+                '  graph [ compound = true, ranksep = 1, rankdir = TD, splines = \"spline\" ];\n' +
                 '  "A0" [ height = 0.5, fontsize = 10, margin = "0.20, 0.05", shape = record, label = "{ ICustomer\\n|+name\\n+email\\n|\\n }" ];\n'+
                 '}\n';
             
