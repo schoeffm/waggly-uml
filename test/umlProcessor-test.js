@@ -12,7 +12,7 @@ describe("'umlProcessor'", function() {
      */
     it('should turn a svg to a png using convert (no matter if convert produces good results)', function (done) {
         fs.readFile('test/testFixture3.svg', {encoding: 'utf-8'}, function(err, inputData) {
-            umlProcessor.transformToPNG(inputData, function (result) {
+            umlProcessor.transformTo(inputData, 'svg', function (result) {
                 assert(Buffer.isBuffer(result));
                 assert(Buffer.isEncoding('binary'));
                 assert(Buffer.length > 0);

@@ -65,34 +65,35 @@ var handleSVGData = function(svgInputData, config, callback) {
 };
 
 var handleOutputData = function(outputData, config, callback) {
-    // transformToPNG(outputData);
-    if (callback) {
-        if (config.format !== 'svg') {
-            transformToPNG(outputData, function(binaryData) { callback(binaryData); });
-        } else {
-            callback(outputData);
-        }
-    } else if (config.output) {
-        fs.writeFile(config.output.replace(/png$/, 'svg'), outputData, function (err) {
-            if (err) return console.log(err);
-            if (config.format && _.endsWith(config.format, 'png')) {
-                var rsvg = spawn('rsvg-convert', ['-f', 'png', '-o', config.output.replace(/svg$/, 'png'), config.output.replace(/png$/, 'svg')]);
-                rsvg.stdout.on('data', function(output) { console.log(output.toString()); });
-                rsvg.stderr.on('data', function(output) { console.log(output.toString()); });
-                rsvg.on('close', function(code) {
-                    fs.unlink(config.output.replace(/png$/, 'svg'), function(err) {
-                        if (err) {
-                            console.log("Couldn't remove the temporary file %s - please do this manually",
-                                config.output.replace(/png$/, 'svg'))
-                        }
-                    }); }); }   });
+    callback = callback || ((config.output) ? toFileCallback(config) : toStdOut);
+    
+    if (config.format !== 'svg') {
+        transformTo(outputData, config.format, function(binaryData) { callback(binaryData); });
     } else {
-        console.log(outputData);
+        callback(outputData);
     }
+    
 };
 
-var transformToPNG = function (outputData, callback) {
-    var conv = im.convert(['-trim', 'svg:-', 'png:-']);
+/*
+ * just logs everything to the console - no matter if it's binary or not
+ */
+var toStdOut = function(outputData) { console.log(outputData); };
+
+/*
+ * returns a function (based on the given config) which writes the given output-data to a file (which is 
+ * configured within' the given config-object).
+ */
+var toFileCallback = function(config) {
+    return function(outputData) {
+        fs.writeFile(config.output, outputData, { encoding: (config.format !== 'svg' ? 'binary' : 'utf-8') }, function(err) {
+            if (err) throw err;
+            console.log('It\'s saved!');                        
+}); };  };
+
+var transformTo = function (outputData, format, callback) {
+    var destinationFormat = (_.contains(['png', 'jpg'], format)) ? format : 'jpg';
+    var conv = im.convert(['-trim', 'svg:-', destinationFormat + ':-']);
 
     var accumulator = [];
     
@@ -125,5 +126,5 @@ module.exports.createDiagram = createDiagram;
 if (process.env.exportForTesting) {
     module.exports.handleSVGData = handleSVGData;
     module.exports.handleOutputData = handleOutputData;
-    module.exports.transformToPNG = transformToPNG;
+    module.exports.transformTo = transformTo;
 }
