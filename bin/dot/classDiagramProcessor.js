@@ -67,7 +67,7 @@ var toDotModel = function(tokenList, config) {
     // determine configs as provided by the caller (if given at all)
     var orientation = (config.orientation && _.contains(['TD', 'LR'], config.orientation))
         ? config.orientation
-        : ((tokenList.length > 5) ? 'TD' : 'LR');
+        : ((tokenList.length > 7) ? 'TD' : 'LR');
     var splineType = (config.splines && _.contains(['ortho', 'spline'], config.splines))
         ? config.splines
         : 'spline';
