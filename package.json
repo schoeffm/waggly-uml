@@ -1,6 +1,6 @@
 {
   "name": "wuml",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "A CLI tool which lets you create UML-diagrams based on an ascii description",
   "private": false,
   "main": "./bin/umlProcessor",
