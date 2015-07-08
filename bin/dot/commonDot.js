@@ -42,11 +42,12 @@ var edgeHandlers = {
         if (c.is(edgeToken.type, c.NODE_TYPE_EDGE) && tokenBefore && tokenAfter) {
             var leftNode = nodeLookupCache[recordName(tokenBefore.content.text)];
             var rightNode = nodeLookupCache[recordName(tokenAfter.content.text)];
-            if (tokenBefore.type === 'cluster') {
+            
+            if (tokenBefore.type === c.NODE_TYPE_CLUSTER) {
                 config = _.merge( { ltail : nodeLookupCache[recordName(tokenBefore.content.text)].id }, config );
                 leftNode = nodeLookupCache[recordName(tokenBefore.content.nodeNames[0])];
             }
-            if (tokenAfter.type === 'cluster') {
+            if (tokenAfter.type === c.NODE_TYPE_CLUSTER) {
                 config = _.merge( { lhead: nodeLookupCache[recordName(tokenAfter.content.text)].id }, config );
                 rightNode = nodeLookupCache[recordName(tokenAfter.content.nodeNames[0])];
             }
