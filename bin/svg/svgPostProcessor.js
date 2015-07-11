@@ -8,7 +8,10 @@ var c = require('./../constants');
 
 /**
  * This post-processor will replace all ellipse-elements with 4 arc-paths to imitate that ellipse (but not as perfect
- * as an ellipse, of course).
+ * as an ellipse, of course).<br/>
+ * The implementation is a bit nasty - it will remove the stroke from the original ellipsis and will replace that 
+ * with 4 ellipse-arcs - the original one is preserved in order to offer the ability to fill the background (and to
+ * preserve future features like links as well).
  * 
  * @param svgInput to be processed
  */
@@ -16,26 +19,35 @@ var ellipsisSubstitutionPostProcessor = function(svgInput, config) {
     
     if (config.waggly !== true) { return svgInput; }
     
-    var pathTemplate = _.template('<path d="M<%= startX %>,<%= startY %> A<%= radiusX %>,<%= radiusY %> 0 0,0 <%= endX %>,<%= endY %>" style="stroke:black; fill:none;"></path>');
+    var pathTemplate = _.template('<path d="M<%= startX %>,<%= startY %> A<%= radiusX %>,<%= radiusY %> 0 0,0 <%= endX %>,<%= endY %>" style="stroke:black; fill:<%=fill%>;"></path>');
     
     var doc = new dom().parseFromString(svgInput);
     var select = xpath.useNamespaces({"svg": "http://www.w3.org/2000/svg"});
 
     _.forEach(select("//svg:ellipse", doc), function(node) {
+        var fill = node.getAttribute('fill');
         var x = parseFloat(node.getAttribute('cx'));
         var y = parseFloat(node.getAttribute('cy'));
         var rx = parseFloat(node.getAttribute('rx'));
         var ry = parseFloat(node.getAttribute('ry'));
         
-        var startOffsets = {x: Math.floor(Math.random()*15) + 5, y: Math.floor(Math.random() * 4) + 2};
+        var startOffsets = {x: Math.floor(Math.random()*15) + 5, y: Math.floor(Math.random() * 2) + 2};
         var endOffsets = {x: -1*Math.floor(Math.random()*15) + 5, y: 0};
+        var rotation = ((Math.floor(Math.random() * 2) === 1) ? 178 : -2)+ Math.floor(Math.random() * 4); 
 
-        node.parentNode.appendChild(new dom().parseFromString(pathTemplate({startX: (x + startOffsets.x), startY: (y-ry-startOffsets.y), radiusX: rx, radiusY: (ry+startOffsets.y), endX: (x-rx), endY: (y)})));
-        node.parentNode.appendChild(new dom().parseFromString(pathTemplate({startX: (x-rx), startY: (y), radiusX: rx, radiusY: ry, endX: x, endY: (y+ry)})));
-        node.parentNode.appendChild(new dom().parseFromString(pathTemplate({startX: x, startY: (y+ry), radiusX: rx, radiusY: ry, endX: (x+rx), endY: y})));
-        node.parentNode.appendChild(new dom().parseFromString(pathTemplate({startX: (x+rx), startY: y, radiusX: rx, radiusY: ry, endX: (x+endOffsets.x), endY: (y-ry)})));
+        // place 4 arcs in order to imitate an ellipsis
+        var subgraph = new dom().parseFromString('<g id="' + node.parentNode.getAttribute('id') + '_elli" class="node" transform="rotate('+rotation+','+x+','+y+')">');
+        node.parentNode.appendChild(subgraph);
         
-        node.parentNode.removeChild(node);
+        _.forEach(select('//g[@id="' + node.parentNode.getAttribute('id') + '_elli"]', node.parentNode), function(sub) {
+            sub.appendChild(new dom().parseFromString(pathTemplate({startX: (x + startOffsets.x), startY: (y-ry-startOffsets.y), radiusX: rx, radiusY: (ry+startOffsets.y), endX: (x-rx), endY: (y), fill:fill})));
+            sub.appendChild(new dom().parseFromString(pathTemplate({startX: (x-rx), startY: (y), radiusX: rx, radiusY: ry, endX: x, endY: (y+ry), fill:fill})));
+            sub.appendChild(new dom().parseFromString(pathTemplate({startX: x, startY: (y+ry), radiusX: rx, radiusY: ry, endX: (x+rx), endY: y, fill:fill})));
+            sub.appendChild(new dom().parseFromString(pathTemplate({startX: (x+rx), startY: y, radiusX: rx, radiusY: ry, endX: (x+endOffsets.x), endY: (y-ry), fill:fill})));// remove the original
+        });
+        
+        //node.parentNode.removeChild(node);
+        node.setAttribute('style', 'stroke:none; fill:' + fill); // 'cause of the background keep the original there
     });
     return doc.toString();
 };
@@ -108,7 +120,7 @@ var actorSubstitutionPostProcessor = function(svgInput) {
 
 var postProcess = function(svgInput, config) {
     var svgOutput = svgInput;
-    [actorSubstitutionPostProcessor /*, ellipsisSubstitutionPostProcessor*/]
+    [actorSubstitutionPostProcessor , ellipsisSubstitutionPostProcessor]
             .forEach(function(postProcessor) { svgOutput = postProcessor(svgOutput, config); });
     return svgOutput;        
 };
