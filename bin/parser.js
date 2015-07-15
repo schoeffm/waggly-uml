@@ -199,7 +199,7 @@ var collectUntil = function(token, delimiter, lookAt) {
     var word = (reverted) ? token.split("").reverse().join("") : token;
 
     if (lookAt === LookAt.BETWEEN) {
-        var regex = new RegExp(delimiter + '([,_:;$!&\\(\\)a-zA-Z0-9 \-]*)' + delimiter, 'g');
+        var regex = new RegExp(delimiter + '([^\\..*]*)' + delimiter, 'g');
         result = word.match(regex);
         return _.trim(result, delimiter);
     } else {
