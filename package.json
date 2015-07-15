@@ -28,7 +28,7 @@
     "lodash": "^3.8.0",
     "node-imagemagick": "^0.1.8",
     "through": "^2.3.7",
-    "wsvg": "^0.0.12",
+    "wsvg": "^0.0.13",
     "xmldom": "^0.1.19",
     "xpath": "0.0.9"
   },
