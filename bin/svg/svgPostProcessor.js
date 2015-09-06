@@ -17,15 +17,9 @@ var fontTemplate = fs.readFileSync(__dirname + '/Dadhand_template.svg').toString
  */
 var fontInjectionPostProcessor = function(svgInput, config) {
     if (config.waggly !== true) { return svgInput; }
-
-    var doc = new dom().parseFromString(svgInput);
-    var select = xpath.useNamespaces({"svg": "http://www.w3.org/2000/svg"});
-
-    _.forEach(select("/svg:svg", doc), function(svg) {
-        svg.appendChild(new dom().parseFromString(fontTemplate));
-    });
     
-    return doc.toString();
+    // a horrible workaround due to a bug in xmldom which turns attributes into reserved words!!!
+    return svgInput.replace('</svg>', fontTemplate+'</svg>');
 };
 
 /**
