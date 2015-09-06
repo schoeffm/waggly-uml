@@ -5,6 +5,28 @@ var dom = require('xmldom').DOMParser;
 var fs = require('fs');
 var c = require('./../constants');
 
+var fontTemplate = fs.readFileSync('/Users/schoeffm/workspace/wagglyuml/bin/svg/dadhand_template.svg').toString();
+
+/**
+ * This post-processor will inject the Dadhand font-definition to the very top of the output-svg. By injecting 
+ * this definition the SVG is self contained with respect to fonts 
+ * 
+ * @param svgInput to be enhanced
+ * @param config the original configuration as defined by the user
+ * @return either the unchanged input or the enhanced version of the given SVG
+ */
+var fontInjectionPostProcessor = function(svgInput, config) {
+    if (config.waggly !== true) { return svgInput; }
+
+    var doc = new dom().parseFromString(svgInput);
+    var select = xpath.useNamespaces({"svg": "http://www.w3.org/2000/svg"});
+
+    _.forEach(select("/svg:svg", doc), function(svg) {
+        svg.appendChild(new dom().parseFromString(fontTemplate));
+    });
+    
+    return doc.toString();
+};
 
 /**
  * This post-processor will replace all ellipse-elements with 4 arc-paths to imitate that ellipse (but not as perfect
@@ -31,8 +53,8 @@ var ellipsisSubstitutionPostProcessor = function(svgInput, config) {
         var rx = parseFloat(node.getAttribute('rx'));
         var ry = parseFloat(node.getAttribute('ry'));
         
-        var startOffsets = {x: Math.floor(Math.random()*15) + 5, y: Math.floor(Math.random() * 2) + 2};
-        var endOffsets = {x: -1*Math.floor(Math.random()*15) + 5, y: 0};
+        var startOffsets = {x: Math.floor(Math.random() * 15) + 5, y: Math.floor(Math.random() * 2) + 2};
+        var endOffsets = {x: -1 * Math.floor(Math.random() * 15) + 5, y: 0};
         var rotation = ((Math.floor(Math.random() * 2) === 1) ? 178 : -2)+ Math.floor(Math.random() * 4); 
 
         // place 4 arcs in order to imitate an ellipsis
@@ -77,7 +99,7 @@ var actorSubstitutionPostProcessor = function(svgInput) {
                 '<path style="fill:none;stroke:#000000;" d="M 0,23.07308 14.199905,27.591237" id="path4310"/>' +
                 '<path id="path4312" d="M 13.685157,41.965708 22.4600554,57.127768" style="fill:none;stroke:#000000;" />' +
                 '<path style="fill:none;stroke:#000000;" d="M 5.9397546,57.127768 14.714653,41.965708" id="path4314"/>' +
-                '<text text-anchor="middle" x="14.84" y="70" font-family="Times,serif" font-size="10.00"><%= title %></text>' +
+                '<text text-anchor="middle" x="14.84" y="70" font-family="Dadhand" font-size="10.00"><%= title %></text>' +
             '</g>'
     };
 
@@ -120,7 +142,7 @@ var actorSubstitutionPostProcessor = function(svgInput) {
 
 var postProcess = function(svgInput, config) {
     var svgOutput = svgInput;
-    [actorSubstitutionPostProcessor , ellipsisSubstitutionPostProcessor]
+    [actorSubstitutionPostProcessor , ellipsisSubstitutionPostProcessor, fontInjectionPostProcessor]
             .forEach(function(postProcessor) { svgOutput = postProcessor(svgOutput, config); });
     return svgOutput;        
 };
@@ -130,4 +152,5 @@ module.exports.postProcess = postProcess;
 if (process.env.exportForTesting) {
     module.exports.actorSubstitutionPostProcessor = actorSubstitutionPostProcessor;
     module.exports.ellipsisSubstitutionPostProcessor = ellipsisSubstitutionPostProcessor;
+    module.exports.fontInjectionPostProcessor = fontInjectionPostProcessor;
 }
