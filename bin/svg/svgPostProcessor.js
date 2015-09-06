@@ -5,7 +5,7 @@ var dom = require('xmldom').DOMParser;
 var fs = require('fs');
 var c = require('./../constants');
 
-var fontTemplate = fs.readFileSync('/Users/schoeffm/workspace/wagglyuml/bin/svg/Dadhand_template.svg').toString();
+var fontTemplate = fs.readFileSync(__dirname + '/Dadhand_template.svg').toString();
 
 /**
  * This post-processor will inject the Dadhand font-definition to the very top of the output-svg. By injecting 
