@@ -6,6 +6,7 @@ var fs = require('fs');
 var c = require('./../constants');
 
 var fontTemplate = fs.readFileSync(__dirname + '/dadhand_temp.svg').toString();
+var select = xpath.useNamespaces({"svg": "http://www.w3.org/2000/svg"});
 
 /**
  * This post-processor will inject the Dadhand font-definition to the very top of the output-svg. By injecting 
@@ -17,10 +18,16 @@ var fontTemplate = fs.readFileSync(__dirname + '/dadhand_temp.svg').toString();
  */
 var fontInjectionPostProcessor = function(svgInput, config) {
     if (config.waggly !== true) { return svgInput; }
+
+    var doc = new dom().parseFromString(svgInput);
+    
+    _.forEach(select("//svg:text", doc), function(node) {
+        node.setAttribute('font-family', 'Dadhand');
+    });
     
     // a horrible workaround due to a bug in xmldom which turns attributes into reserved words!!!
     return svgInput.replace('</svg>', fontTemplate+'</svg>');
-};
+};  
 
 /**
  * This post-processor will replace all ellipse-elements with 4 arc-paths to imitate that ellipse (but not as perfect
@@ -38,7 +45,6 @@ var ellipsisSubstitutionPostProcessor = function(svgInput, config) {
     var pathTemplate = _.template('<path d="M<%= startX %>,<%= startY %> A<%= radiusX %>,<%= radiusY %> 0 0,0 <%= endX %>,<%= endY %>" style="stroke:black; fill:<%=fill%>;"></path>');
     
     var doc = new dom().parseFromString(svgInput);
-    var select = xpath.useNamespaces({"svg": "http://www.w3.org/2000/svg"});
 
     _.forEach(select("//svg:ellipse", doc), function(node) {
         var fill = node.getAttribute('fill');
@@ -99,7 +105,6 @@ var actorSubstitutionPostProcessor = function(svgInput) {
 
     
     var doc = new dom().parseFromString(svgInput);
-    var select = xpath.useNamespaces({"svg": "http://www.w3.org/2000/svg"});
     var actorTemplate = _.template(actor.content);
     
     _.filter(select("//svg:text", doc), function(node) {

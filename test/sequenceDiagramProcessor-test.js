@@ -158,7 +158,6 @@ describe("'sequenceDiagramProcessor'", function() {
         
         it('... create an expected output that is a valid pic-format', function(done) {
             sequenceParser.processString(testSequenceInput, function(transformed) {
-                console.log(transformed);
                 assert(_.endsWith(transformed, expectedSequenceOutput));
                 done();
             });
