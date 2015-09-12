@@ -1,7 +1,6 @@
 'use strict';
 
 var assert = require("assert");
-var exec = require('child_process').exec;
 var path = require('path');
 var parser = require('../bin/parser');
 var fs = require('fs');
@@ -32,26 +31,26 @@ describe("'parser'", function() {
         it('should create a corresponding model for the class-input', function () {
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[0],
-                {type: 'record', content: {link: '', background: '', text: 'ICustomer|+name;+email|'}});
+                {type: 'record', content: { additions: {}, text: 'ICustomer|+name;+email|'}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[1],
                 { type: 'edge', content: {text: '', left: {type: 'empty', text: ''}, right: {type: 'none', text: ''}, style: 'dashed'}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[11],
-                {type: 'note', content: {link: '',background: '', text: 'Aggregate root.'}});
+                {type: 'note', content: { additions: {}, text: 'Aggregate root.'}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[12],
-                {type: 'cluster', content: {background: '', text: 'My Cluster', nodeNames:['Order','Customer']}});
+                {type: 'cluster', content: {additions: {}, text: 'My Cluster', nodeNames:['Order','Customer']}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[13].type, 'edge');
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[14],
-                {type: 'record', content: {link: '',background: '', text: 'Bar'}});
+                {type: 'record', content: {additions: {}, text: 'Bar'}});
         });
         it('should create a corresponding model for the sequence-input', function () {
             assert.deepEqual(
                 underTest.toDocumentModel(testSequenceInput)[0], 
-                { type: 'record', content: { link: '',background: '', text: 'Patron' } });
+                { type: 'record', content: {additions: {}, text: 'Patron' } });
             assert.deepEqual(
                 underTest.toDocumentModel(testSequenceInput)[1],
                 { type: 'edge', content: {text: '', left: {type: 'none', text: ''}, right: {type: 'normal', text: 'order food'}, style: 'solid'}});
@@ -146,35 +145,22 @@ describe("'parser'", function() {
 
 
     describe('When processing a nodes, we make use of a bunch of auxiliary functions, like ...', function() {
-        describe('determineBackgroundColor - which ...', function() {
-            it('should extract the class\' background as "cornsilk"', function () {
-                assert.strictEqual(parser.determineBackgroundColor('[note: This is a damn long text {bg:cornsilk}]'),
-                    'cornsilk');
+        
+        describe('determineAdditions', function() {
+            it('should to what i want', function() {
+                assert.deepEqual(parser.determineAddition('[note: This is a damn long text {bg:cornsilk}]'),
+                    {'bg' : 'cornsilk'});
             });
-            it('should extract the ellipses background as "cornsilk"', function() {
-                assert.strictEqual(parser.determineBackgroundColor('(This is a damn long text {bg:cornsilk})'),
-                    'cornsilk');
+            it('should to what i want', function() {
+                assert.deepEqual(parser.determineAddition('[note: This is a damn long text {bg:cornsilk ; link:http://foo.bar; face:time}]'),
+                    { 'bg' : 'cornsilk',
+                        'link': 'http://foo.bar',
+                        'face':'time'
+                    }
+                )
             });
         });
         
-        describe('determineLink - should extract the link from:', function() {
-            it('from node with exact definition', function() {
-                assert.strictEqual(parser.determineLink('[note: This is a damn long text {link:http://www.google.de}]'), 
-                'http://www.google.de')                
-            });
-            it('definition with leading and trailing spaces', function() {
-                assert.strictEqual(parser.determineLink('[note: This is a damn long text {  link:http://www.google.de  }]'),
-                    'http://www.google.de')
-            });
-            it('definition with other definitions like background-color', function() {
-                assert.strictEqual(parser.determineLink('[note: This is a damn long text {  link:http://www.google.de , bg:cornsilk }]'),
-                    'http://www.google.de')
-            });
-            it('definition with other definitions like background-color all without whitespaces', function() {
-                assert.strictEqual(parser.determineLink('[note: This is a damn long text {link:http://www.google.de;bg:cornsilk}]'),
-                    'http://www.google.de')
-            });
-        });
 
         describe('collectUntil - which ...', function() {
             
@@ -209,19 +195,19 @@ describe("'parser'", function() {
             it('should recognize notes with only one containing text and a background-color (the last one will be picked)', function () {
                 assert.deepEqual(
                     parser.processNote('[note: This is a damn long text {bg:green}{link:http://www.golem.de; bg:yellow}]').content,
-                    {link: 'http://www.golem.de',background: 'green', text: 'This is a damn long text'});
+                    {additions:{bg: 'green'}, text: 'This is a damn long text'});
             });
 
             it('should recognize a regular note containing text and bg-infos', function () {
                 assert.deepEqual(
                     parser.processNote('[note: This is a damn long text {bg:green}]').content,
-                    {link: '',background: 'green', text: 'This is a damn long text'});
+                    {additions:{bg:'green'}, text: 'This is a damn long text'});
             });
 
             it('should recognize a text-only note (without background)', function () {
                 assert.deepEqual(
                     parser.processNote('[note: This is a damn long text]').content,
-                    {link: '',background: '', text: 'This is a damn long text'});
+                    {additions:{}, text: 'This is a damn long text'});
             });
 
             it('should create model-entries of type "note"', function () {
@@ -236,7 +222,7 @@ describe("'parser'", function() {
                 assert.strictEqual(parser.processEllipse('(This is a Ellipse)').content.text, 'This is a Ellipse');
             });
             it('should extract background definitions', function() {
-                assert.strictEqual(parser.processEllipse('(This is a Ellipse {bg:green})').content.background, "green");
+                assert.strictEqual(parser.processEllipse('(This is a Ellipse {bg:green})').content.additions.bg, "green");
             });
         });
         describe('processClass - which ...', function() {
@@ -247,7 +233,7 @@ describe("'parser'", function() {
                 assert.strictEqual(parser.processClass('[This is |a Class]').content.text, 'This is |a Class');
             });
             it('should extract background definitions', function() {
-                assert.strictEqual(parser.processClass('(This is a Class {bg:green})').content.background, "green");
+                assert.strictEqual(parser.processClass('(This is a Class {bg:green})').content.additions.bg, "green");
             });
         });
 
@@ -259,7 +245,7 @@ describe("'parser'", function() {
             it('should recognize a 2-node containing cluster with background-definition', function () {
                 assert.deepEqual(parser.processCluster('[This is a Cluster [Node1] [Node2] {bg:green}]').content,
                     {
-                        background: "green",
+                        additions: {bg : 'green'},
                         nodeNames: [ "Node1", "Node2" ],
                         text: "This is a Cluster"
                     }

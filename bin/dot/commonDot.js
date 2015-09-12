@@ -31,9 +31,9 @@ var prepareLabel = function(label, orientation) {
 };
 
 var _setBackgroundIfDefined = function(node, token) {
-    if (token.content.background) {
+    if (token.content.additions && token.content.additions.bg) {
         node.set('style', 'filled');
-        node.set('fillcolor', token.content.background);
+        node.set('fillcolor', token.content.additions.bg);
     }
 };
 

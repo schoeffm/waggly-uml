@@ -1,7 +1,6 @@
 'use strict';
 
 var _ = require('lodash');
-var util = require('util');
 var graphviz = require('graphviz');
 var parser = require('./../parser').create({
     startNodeSigns : ['[', '('], 

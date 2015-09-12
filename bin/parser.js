@@ -74,38 +74,33 @@ var isCluster = function(token) {
     return stripped.indexOf('[') >= 0 && stripped.lastIndexOf(']') >= 0
 };
 
-
 /**
- * Searchs the given token for a substring which looks like that:
+ * Additions are given within curly braces like this.
  * <pre>
- *  {bg:green}
+ *   {bg:cornsilk; link:http://www.google.de}
  * </pre>
- * So the main characteristic is the {@code br:}-prefix enclosed within curly braces.
- *
- * @param token (string) the token to be checked for a background-color definition
- * @return the respective color-definition or an empty string
- */
-var determineBackgroundColor = function(token) {
-    var regex = /\{\s*?bg:\s*(\S+?)[;\s\}]+/;
-    var match = regex.exec(token);
-    return (match) ? match[1] : '';
-};
-
-/**
- * Similar to the background-color definition this method will search the given token
- * for a link-definition
- * <pre>
- *   {link:http://www.google.de}
- * </pre>
- * 
+ * and are contained within nodes like classes, notes or ellipses.
+ * This method will analyze all contained key-value-pairs ann turns 'em
+ * into an array of respective objects.
  * 
  * @param token
- * @returns {string}
+ * @returns {Array}
  */
-var determineLink = function(token) {
-    var regex = /\{\s*?link:\s*(\S+?)[;\s\}]+/;
-    var match = regex.exec(token);
-    return (match) ? match[1] : '';
+var determineAdditions = function(token) {
+    var additions = {};
+    var hasAdditions = /\{(.*?)\}/.exec(token);
+    if (hasAdditions) {
+        hasAdditions[1]
+            .split(';')
+            .forEach(function(addition) {
+                var regex = /^(\S+?)\s*?:\s*?(\S+?)$/;
+                var match = regex.exec(_.trim(addition));
+                if (match) {
+                    additions[match[1]] = match[2];
+                }  
+            });
+    }
+    return additions;
 };
 
 /**
@@ -136,8 +131,7 @@ var processEllipse = function(ellipseToken) {
     return {
         type: 'ellipse',
         content: {
-            link: determineLink(ellipseToken),
-            background: determineBackgroundColor(ellipseToken),
+            additions : determineAdditions(ellipseToken),
             text: extractText(ellipseToken, '(',')')
         }
     }; 
@@ -153,9 +147,8 @@ var processNote = function(noteToken) {
     return {
         type: 'note',
         content: {
-            link: determineLink(noteToken),
-            background: determineBackgroundColor(noteToken),
-            text: extractText(noteToken, ':',']')
+            text: extractText(noteToken, ':',']'),
+            additions : determineAdditions(noteToken)
         }
     };
 };
@@ -170,8 +163,7 @@ var processClass = function(classToken) {
     return {
         type: 'record',
         content: {
-            link: determineLink(classToken),
-            background: determineBackgroundColor(classToken),
+            additions : determineAdditions(classToken),
             text: extractText(classToken, '[',']')
         }
     };
@@ -199,7 +191,7 @@ var processCluster = function(clusterTocken) {
     return {
         type: 'cluster',
         content: {
-            background: determineBackgroundColor(clusterTocken),
+            additions: determineAdditions(clusterTocken),
             text: _.trim(clusterTocken.substring(startIndex, endIndex)),
             nodeNames: trimmedNodes
         }
@@ -345,8 +337,7 @@ module.exports.create = function(config) {
 if (process.env.exportForTesting) {     // only export these things for testing
     module.exports.tokenize = tokenize;
     
-    module.exports.determineBackgroundColor = determineBackgroundColor;
-    module.exports.determineLink = determineLink;
+    module.exports.determineAddition = determineAdditions;
     
     module.exports.isNote = isNote;
     module.exports.isClass = isClass;

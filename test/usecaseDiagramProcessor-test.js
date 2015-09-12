@@ -16,7 +16,7 @@ describe("'usecaseDiagramProcessor'", function() {
     
     describe("toDotModel will ...", function() {
         it("... create note-nodes of 0.5x0.5 size", function() {
-            var result = underTest.toDotModel([{type: 'note', content: {text: 'Foo' }}]);
+            var result = underTest.toDotModel([{type: 'note', content: {text: 'Foo'}}]);
             assert(_.contains(result, 'height = 0.5'));   
             assert(_.contains(result, 'width = 0.5'));   
         });
