@@ -75,7 +75,7 @@ var isCluster = function(token) {
 };
 
 
-/*
+/**
  * Searchs the given token for a substring which looks like that:
  * <pre>
  *  {bg:green}
@@ -86,7 +86,24 @@ var isCluster = function(token) {
  * @return the respective color-definition or an empty string
  */
 var determineBackgroundColor = function(token) {
-    var regex = /\{bg:([A-Za-z0-9#]+)?\}/;
+    var regex = /\{\s*?bg:\s*(\S+?)[;\s\}]+/;
+    var match = regex.exec(token);
+    return (match) ? match[1] : '';
+};
+
+/**
+ * Similar to the background-color definition this method will search the given token
+ * for a link-definition
+ * <pre>
+ *   {link:http://www.google.de}
+ * </pre>
+ * 
+ * 
+ * @param token
+ * @returns {string}
+ */
+var determineLink = function(token) {
+    var regex = /\{\s*?link:\s*(\S+?)[;\s\}]+/;
     var match = regex.exec(token);
     return (match) ? match[1] : '';
 };
@@ -119,6 +136,7 @@ var processEllipse = function(ellipseToken) {
     return {
         type: 'ellipse',
         content: {
+            link: determineLink(ellipseToken),
             background: determineBackgroundColor(ellipseToken),
             text: extractText(ellipseToken, '(',')')
         }
@@ -135,6 +153,7 @@ var processNote = function(noteToken) {
     return {
         type: 'note',
         content: {
+            link: determineLink(noteToken),
             background: determineBackgroundColor(noteToken),
             text: extractText(noteToken, ':',']')
         }
@@ -151,6 +170,7 @@ var processClass = function(classToken) {
     return {
         type: 'record',
         content: {
+            link: determineLink(classToken),
             background: determineBackgroundColor(classToken),
             text: extractText(classToken, '[',']')
         }
@@ -326,11 +346,13 @@ if (process.env.exportForTesting) {     // only export these things for testing
     module.exports.tokenize = tokenize;
     
     module.exports.determineBackgroundColor = determineBackgroundColor;
+    module.exports.determineLink = determineLink;
     
     module.exports.isNote = isNote;
     module.exports.isClass = isClass;
     module.exports.isEdge = isEdge;
     module.exports.isCluster = isCluster;
+    module.exports.isClusterd = isCluster;
     module.exports.isEllipse = isEllipse;
     
     module.exports.processNote = processNote;

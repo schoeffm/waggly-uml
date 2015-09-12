@@ -32,13 +32,13 @@ describe("'parser'", function() {
         it('should create a corresponding model for the class-input', function () {
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[0],
-                {type: 'record', content: {background: '', text: 'ICustomer|+name;+email|'}});
+                {type: 'record', content: {link: '', background: '', text: 'ICustomer|+name;+email|'}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[1],
                 { type: 'edge', content: {text: '', left: {type: 'empty', text: ''}, right: {type: 'none', text: ''}, style: 'dashed'}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[11],
-                {type: 'note', content: {background: '', text: 'Aggregate root.'}});
+                {type: 'note', content: {link: '',background: '', text: 'Aggregate root.'}});
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[12],
                 {type: 'cluster', content: {background: '', text: 'My Cluster', nodeNames:['Order','Customer']}});
@@ -46,12 +46,12 @@ describe("'parser'", function() {
                 underTest.toDocumentModel(testClassInput)[13].type, 'edge');
             assert.deepEqual(
                 underTest.toDocumentModel(testClassInput)[14],
-                {type: 'record', content: {background: '', text: 'Bar'}});
+                {type: 'record', content: {link: '',background: '', text: 'Bar'}});
         });
         it('should create a corresponding model for the sequence-input', function () {
             assert.deepEqual(
                 underTest.toDocumentModel(testSequenceInput)[0], 
-                { type: 'record', content: { background: '', text: 'Patron' } });
+                { type: 'record', content: { link: '',background: '', text: 'Patron' } });
             assert.deepEqual(
                 underTest.toDocumentModel(testSequenceInput)[1],
                 { type: 'edge', content: {text: '', left: {type: 'none', text: ''}, right: {type: 'normal', text: 'order food'}, style: 'solid'}});
@@ -156,6 +156,25 @@ describe("'parser'", function() {
                     'cornsilk');
             });
         });
+        
+        describe('determineLink - should extract the link from:', function() {
+            it('from node with exact definition', function() {
+                assert.strictEqual(parser.determineLink('[note: This is a damn long text {link:http://www.google.de}]'), 
+                'http://www.google.de')                
+            });
+            it('definition with leading and trailing spaces', function() {
+                assert.strictEqual(parser.determineLink('[note: This is a damn long text {  link:http://www.google.de  }]'),
+                    'http://www.google.de')
+            });
+            it('definition with other definitions like background-color', function() {
+                assert.strictEqual(parser.determineLink('[note: This is a damn long text {  link:http://www.google.de , bg:cornsilk }]'),
+                    'http://www.google.de')
+            });
+            it('definition with other definitions like background-color all without whitespaces', function() {
+                assert.strictEqual(parser.determineLink('[note: This is a damn long text {link:http://www.google.de;bg:cornsilk}]'),
+                    'http://www.google.de')
+            });
+        });
 
         describe('collectUntil - which ...', function() {
             
@@ -189,20 +208,20 @@ describe("'parser'", function() {
         describe('processNote - which ...', function() {
             it('should recognize notes with only one containing text and a background-color (the last one will be picked)', function () {
                 assert.deepEqual(
-                    parser.processNote('[note: This is a damn long text {bg:green}{bg:yellow}]').content,
-                    {background: 'green', text: 'This is a damn long text'});
+                    parser.processNote('[note: This is a damn long text {bg:green}{link:http://www.golem.de; bg:yellow}]').content,
+                    {link: 'http://www.golem.de',background: 'green', text: 'This is a damn long text'});
             });
 
             it('should recognize a regular note containing text and bg-infos', function () {
                 assert.deepEqual(
                     parser.processNote('[note: This is a damn long text {bg:green}]').content,
-                    {background: 'green', text: 'This is a damn long text'});
+                    {link: '',background: 'green', text: 'This is a damn long text'});
             });
 
             it('should recognize a text-only note (without background)', function () {
                 assert.deepEqual(
                     parser.processNote('[note: This is a damn long text]').content,
-                    {background: '', text: 'This is a damn long text'});
+                    {link: '',background: '', text: 'This is a damn long text'});
             });
 
             it('should create model-entries of type "note"', function () {
