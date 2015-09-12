@@ -30,10 +30,12 @@ var prepareLabel = function(label, orientation) {
     return processedLabel;
 };
 
-var _setBackgroundIfDefined = function(node, token) {
-    if (token.content.additions && token.content.additions.bg) {
-        node.set('style', 'filled');
-        node.set('fillcolor', token.content.additions.bg);
+var _setAttributesIfDefined = function(node, token) {
+    node.set('style', 'filled');
+    node.set('fillcolor', (token.content.additions && token.content.additions.bg) ? token.content.additions.bg : 'white');
+    
+    if (token.content.additions && token.content.additions.link) {
+        node.set('URL', token.content.additions.link);    
     }
 };
 
@@ -78,7 +80,7 @@ var nodeHandlers = {
         var uid = 'A' + _.size(nodeLookupCache);
         var node = g.addNode(uid, config);
         
-        _setBackgroundIfDefined(node, token);
+        _setAttributesIfDefined(node, token);
         
         nodeLookupCache[recordName(token.content.text)] = node;
     },
@@ -94,7 +96,7 @@ var nodeHandlers = {
             label: dotUtils.prepareLabel(token.content.text, g.get('rankdir'))
         });
         
-        _setBackgroundIfDefined(node, token);
+        _setAttributesIfDefined(node, token);
         
         nodeLookupCache[recordName(token.content.text)] = node;
     },
@@ -106,7 +108,7 @@ var nodeHandlers = {
         nodeLookupCache[recordName(token.content.text)] = subGraph;
         subGraph.set('label', token.content.text);
         subGraph.set('fontsize', 10);
-        _setBackgroundIfDefined(subGraph, token);
+        _setAttributesIfDefined(subGraph, token);
         
         _.forEach(token.content.nodeNames, function (element) {
             if (nodeLookupCache[recordName(element)]) {
