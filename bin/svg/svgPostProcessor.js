@@ -27,7 +27,52 @@ var fontInjectionPostProcessor = function(svgInput, config) {
     
     // a horrible workaround due to a bug in xmldom which turns attributes into reserved words!!!
     return svgInput.replace('</svg>', fontTemplate+'</svg>');
-};  
+};
+
+/**
+ * This processor, when active, extends all a-tags within the given SVG-input by an
+ * 'onclick'-attribute which calls a delegation-script (that is also injected).<br/>
+ * The delegation-script is just another indirection which preserves the original 
+ * functionality of the contained a-tags when there is no companion script available.
+ * So every a-tag calls the delegation-script which checks the existence of a function
+ * called <pre>wuml.navigateTo</pre>. If it exists, it will be called (and gets the click
+ * event as first parameter), if not nothing happens and the link will be executed.
+ * 
+ * @param svgInput svgInput to be processed
+ */
+var onClickInjectionPostProcessor = function(svgInput) {
+    
+    var delegationScript = '<script type="text/javascript">\n' +
+        '// <![CDATA[\n' +
+        'var wuml;\n' +
+        'if (! wuml) wuml = {}\n' +
+        'if (! wuml.onNavigation) {\n' +
+            'wuml.onNavigation = function(e) {\n' +
+                '// if the companion-script is present we delegate the event to it\n' +
+                'if (wuml.navigateTo) {\n' +
+                    'e.preventDefault();\n' +
+                    'wuml.navigateTo(e);\n' +
+                '}   };  }\n' +
+        '// ]]>\n' +
+        '</script>';
+    
+    var doc = new dom().parseFromString(svgInput);
+    
+    // now extend every a-tag with an onclick-attribute that calls our delegation-script
+    var augmentedNodes = _.map(select("//svg:a", doc), function(node) {
+        node.setAttribute("onclick", "wuml.onNavigation(evt);");
+        return node;
+    });
+    
+    // if there is at least one link contained we'll inject our delegation script
+    if (! _.isEmpty(augmentedNodes)) {                      
+        _.forEach(select("/svg:svg", doc), function(node) { 
+            node.appendChild(new dom().parseFromString(delegationScript));
+        });
+    }
+    
+    return doc.toString();
+};
 
 /**
  * This post-processor will replace all ellipse-elements with 4 arc-paths to imitate that ellipse (but not as perfect
@@ -141,8 +186,12 @@ var actorSubstitutionPostProcessor = function(svgInput) {
 
 var postProcess = function(svgInput, config) {
     var svgOutput = svgInput;
-    [actorSubstitutionPostProcessor , ellipsisSubstitutionPostProcessor, fontInjectionPostProcessor]
-            .forEach(function(postProcessor) { svgOutput = postProcessor(svgOutput, config); });
+    [
+        actorSubstitutionPostProcessor , 
+        ellipsisSubstitutionPostProcessor, 
+        fontInjectionPostProcessor, 
+        onClickInjectionPostProcessor
+    ].forEach(function(postProcessor) { svgOutput = postProcessor(svgOutput, config); });
     return svgOutput;        
 };
 
@@ -152,4 +201,5 @@ if (process.env.exportForTesting) {
     module.exports.actorSubstitutionPostProcessor = actorSubstitutionPostProcessor;
     module.exports.ellipsisSubstitutionPostProcessor = ellipsisSubstitutionPostProcessor;
     module.exports.fontInjectionPostProcessor = fontInjectionPostProcessor;
+    module.exports.onClickInjectionPostProcessor = onClickInjectionPostProcessor;
 }
