@@ -1,6 +1,6 @@
 // foo 
 
-[<<Interface>>;ElementSelectionListener|+handleSelection(T element);]^-.-[FamMainView{link:http://www.wuml.it}]
+[<<Interface>>;ElementSelectionListener|+handleSelection(T element);]^-.-[FamMainView{link:http://www.wuml.it/class/[Person]}]
 [AbstractDesMainView]^-[FamMainView]
 [<<Interface>>;FormSubmissionListener|+handleSubmissionOf(T element);+handleCancellationOf(T element)]^-.-[FamMainView]
 

@@ -120,6 +120,9 @@ describe("'parser'", function() {
         it('should detect a cluster', function () {
             assert.strictEqual(parser.isCluster('[class[]]'), true);
         });
+        it('should detect a cluster but should not take an addition into account', function () {
+            assert.strictEqual(parser.isCluster('[class[]{link:{}[]}]'), true);
+        });
         it('should not detect a class-token that has leading spaces', function () {
             assert.strictEqual(parser.isClass('  [ Text]'), false);
         });

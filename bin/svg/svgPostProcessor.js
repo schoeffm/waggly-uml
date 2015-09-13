@@ -189,8 +189,8 @@ var postProcess = function(svgInput, config) {
     [
         actorSubstitutionPostProcessor , 
         ellipsisSubstitutionPostProcessor, 
-        fontInjectionPostProcessor, 
-        onClickInjectionPostProcessor
+        onClickInjectionPostProcessor,
+        fontInjectionPostProcessor          // this one has to be the last one!!!!!
     ].forEach(function(postProcessor) { svgOutput = postProcessor(svgOutput, config); });
     return svgOutput;        
 };

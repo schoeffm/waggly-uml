@@ -11,7 +11,8 @@ var util = require('util');
  * @param list (array)              a list the word should be pushed on (if it's non-empty)
  */
 var pushNonEmptyWords = function(wordCandidate, list) {
-    if (!_.isEmpty(_.trim(wordCandidate))) { list.push(_.trim(wordCandidate)); }
+    var candidate = _.trim(wordCandidate);
+    if (!_.isEmpty(candidate)) { list.push(candidate); }
 };
 
 /*
@@ -24,23 +25,34 @@ var pushNonEmptyWords = function(wordCandidate, list) {
  * @return (array) a list of words - separated by the given configuration
  */
 var tokenize = function(umlDescription, delimiterConfig) {
-    var words = [];         // collects all non-empty words
-    var word = '';          // buffer for the current word we're analyzing
-    var shapeDepth = 0;     // shape-depth (we have to handle that for clusters)
+    var words = [];             // collects all non-empty words
+    var word = '';              // buffer for the current word we're analyzing
+    var nodeDefDepth = 0;       // shape-depth (we have to handle that for clusters)
+    var withinAddition = false; // marker to recognize when we're within an addition definition
+    
+    var isStartSign = function(character) { return withinAddition === false && _.contains(delimiterConfig.startNodeSigns, character); };
+    var isEndSign = function(character) { return withinAddition === false && _.contains(delimiterConfig.endNodeSigns, character); };
+    var isAdditionStartSign = function(character) { return _.contains(delimiterConfig.additionStartSign, character); };
+    var isAdditionEndSign = function(character) { return _.contains(delimiterConfig.additionEndSign, character); };
 
     // go through the umlDescription character by character
     for (var i = 0; i < umlDescription.length; i++) {
         var character = umlDescription[i];
 
-        // if the current character is a start-sign - increase shapeDepth by one (and thus start collecting chars)
-        if (_.contains(delimiterConfig.startNodeSigns, character)) { shapeDepth += 1; }
+        // if the current character is a start-sign - increase nodeDefDepth by one (and thus start collecting chars)
+        if (isStartSign(character)) { nodeDefDepth += 1; }
 
         // do the opposite in case we got an end-sign
-        else if (_.contains(delimiterConfig.endNodeSigns, character)) { shapeDepth -= 1; }
+        else if (isEndSign(character)) { nodeDefDepth -= 1; }
+        
+        // set a marker when we enter or leave an addition definition (which may contain delimiter signs 
+        // of embedded definitions - those should not be part of the tokenization)
+        if (isAdditionStartSign(character)) { withinAddition = true; }
+        else if (isAdditionEndSign(character)) { withinAddition = false; }
 
         // ok - if we're at level one (so we got one start-sign already) and the current sign is indeed this 
         // start-sign - push the current word and start collecting a new one
-        if (shapeDepth === 1 && _.contains(delimiterConfig.startNodeSigns, character)) {
+        if (nodeDefDepth === 1 && isStartSign(character)) {
             pushNonEmptyWords(word, words);
             word = character;
             continue;
@@ -51,7 +63,7 @@ var tokenize = function(umlDescription, delimiterConfig) {
 
         // in case the current level is zero and we're dealing with the closing-sign lets push the current
         // word and start collecting a new one 
-        if (shapeDepth === 0 && _.contains(delimiterConfig.endNodeSigns, character)) {
+        if (nodeDefDepth === 0 && isEndSign(character)) {
             pushNonEmptyWords(word, words);
             word = '';
         }
@@ -70,8 +82,12 @@ var isEdge = function(token) { return token.indexOf('-') >= 0; };
 var isNote = function(token) { return _.startsWith(token.toLowerCase(), '[note:'); };
 var isClass = function(token) { return _.startsWith(token, '[') && _.endsWith(token, ']'); };
 var isCluster = function(token) {
-    var stripped = token.substring(1, token.length);
-    return stripped.indexOf('[') >= 0 && stripped.lastIndexOf(']') >= 0
+    if (_.size(token) <= 1) return false;         // you cannot define a cluster with less than one char
+    
+    var stripped = token.substring(1, token.length - 1).replace(/{.*?}/gi,'');
+    
+    // var stripped = token.substring(1, token.length - 1);
+    return stripped.indexOf('[') >= 0
 };
 
 /**
@@ -330,7 +346,9 @@ var Parser = function(configuration) {
 module.exports.create = function(config) {
     return new Parser({
         startNodeSigns : config.startNodeSigns || ['[', '('],   // default
-        endNodeSigns : config.endNodeSigns || [']', ')']        // default
+        endNodeSigns : config.endNodeSigns || [']', ')'],       // default
+        additionStartSign : config.additionStartSign || ['{'],  // default
+        additionEndSign : config.additionEndSign || ['}']       // default
     }, config);                                                 // defaults can be overwritten
 };
 
