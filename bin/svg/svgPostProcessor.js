@@ -120,6 +120,17 @@ var ellipsisSubstitutionPostProcessor = function(svgInput, config) {
 };
 
 /**
+ * Since the underlying tools generate svg-graphics with encoding="ISO-8859-1" we'll have to replace that
+ * declaration (it would be much better if we just could pass the encoding to the underlying tool(s) but
+ * unfortunately pic2plot does not support that.
+ * 
+ * @param svgInput
+ */
+var encodingReplacementProcessor = function(svgInput) {
+    return svgInput.replace(/encoding=('|").*('|")/, 'encoding="UTF-8"');
+};
+
+/**
  * This post-processor will look for subgraphs which represents an actor-placeholder node. This is a node where the
  * containing label contains the prefix 'actor:' and will try to 
  * a) remove that subgraph
@@ -190,6 +201,7 @@ var postProcess = function(svgInput, config) {
         actorSubstitutionPostProcessor , 
         ellipsisSubstitutionPostProcessor, 
         onClickInjectionPostProcessor,
+        encodingReplacementProcessor,
         fontInjectionPostProcessor          // this one has to be the last one!!!!!
     ].forEach(function(postProcessor) { svgOutput = postProcessor(svgOutput, config); });
     return svgOutput;        
@@ -202,4 +214,5 @@ if (process.env.exportForTesting) {
     module.exports.ellipsisSubstitutionPostProcessor = ellipsisSubstitutionPostProcessor;
     module.exports.fontInjectionPostProcessor = fontInjectionPostProcessor;
     module.exports.onClickInjectionPostProcessor = onClickInjectionPostProcessor;
+    module.exports.encodingReplacementProcessor = encodingReplacementProcessor;
 }

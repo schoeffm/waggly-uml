@@ -67,3 +67,23 @@ describe("'onClickInjectionPostProcessor'", function() {
         assert(! _.contains(result, 'wuml.onNavigation = function(e) {'));
     })
 });
+
+describe("'encodingReplacementProcessor'", function() {
+    var testFixtureWithEncoding = '<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>' +
+        '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">' +
+        '<svg version="1.1" baseProfile="full" id="body" width="10in" height="10in" ' +
+        'viewBox="0 0 1 1" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" ' +
+        'xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events">' +
+        '<title>SVG drawing</title>';
+    
+    it('... will just replace any predefined encoding with UTF-8', function() {
+        var result = underTest.encodingReplacementProcessor(testFixtureWithEncoding);
+        assert(_.contains(result, 'encoding="UTF-8"'));        
+    });
+
+    it('... will do nothing if no encoding was defined', function() {
+        var result = underTest.encodingReplacementProcessor(
+            testFixtureWithEncoding.replace('encoding="ISO-8859-1"', ''));
+        assert(! _.contains(result, 'encoding="UTF-8"'));
+    });
+});
