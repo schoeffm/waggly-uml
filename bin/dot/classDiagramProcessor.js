@@ -1,17 +1,17 @@
 'use strict';
 
-var _ = require('lodash');
-var graphviz = require('graphviz');
-var parser = require('./../parser').create({
+const _ = require('lodash');
+const graphviz = require('graphviz');
+const parser = require('./../parser').create({
     startNodeSigns : ['[', '('], 
     endNodeSigns : [']', ')'] 
 });
-var fs = require('fs');
-var c = require('./../constants');
-var dotUtils = require('./commonDot');
+const fs = require('fs');
+const c = require('./../constants');
+const dotUtils = require('./commonDot');
 
 
-var configTemplate = {
+const configTemplate = {
     'height': 0.5,
     'fontsize': 10,
     'margin': "0.20, 0.05"
@@ -26,11 +26,11 @@ var configTemplate = {
  *      { orientation: '[TD|LR]', splines: '[ortho|spline]'  }
  * @returns {String} as input for dot
  */
-var toDotModel = function(tokenList, config) {
+const toDotModel = (tokenList, config) => {
     
-    var appendNodes = function(tokenList, g, nodeLookupCache) {
-        for (var i = 0; i < tokenList.length; i++) {
-            var token = tokenList[i];
+    const appendNodes = (tokenList, g, nodeLookupCache) => {
+        for (let i = 0; i < tokenList.length; i++) {
+            const token = tokenList[i];
 
             if (c.is(token.type, c.NODE_TYPE_CLUSTER)) {
                 dotUtils.nodeHandlers.cluster(token, g, nodeLookupCache);
@@ -46,7 +46,7 @@ var toDotModel = function(tokenList, config) {
                 }), g, nodeLookupCache);
     }   }   };     
     
-    var appendEdges = function(tokenList, g, nodeLookupCache) {
+    const appendEdges = (tokenList, g, nodeLookupCache) => {
         for (var j = 0; j < tokenList.length; j++) {
             if (c.is(tokenList[j].type, c.NODE_TYPE_EDGE) && tokenList[j - 1] && tokenList[j + 1]) {
                 dotUtils.edgeHandlers.edgeUsingConfig(tokenList[j], tokenList[j - 1], tokenList[j + 1], {
@@ -64,18 +64,18 @@ var toDotModel = function(tokenList, config) {
     }   }   };
 
     // determine configs as provided by the caller (if given at all)
-    var orientation = (config.orientation && _.includes(['TD', 'LR'], config.orientation))
+    const orientation = (config.orientation && _.includes(['TD', 'LR'], config.orientation))
         ? config.orientation
         : ((tokenList.length > 7) ? 'TD' : 'LR');
-    var splineType = (config.splines && _.includes(['ortho', 'spline'], config.splines))
+    const splineType = (config.splines && _.includes(['ortho', 'spline'], config.splines))
         ? config.splines
         : 'spline';
 
     // this map collects all nodes as we progress through the token-list
-    var nodeLookupCache = {};
+    const nodeLookupCache = {};
 
     // first of all we're createing a new Graph-representation and set some generall configs
-    var g = graphviz.digraph("G");
+    const g = graphviz.digraph("G");
     g.set('compound' , true);
     g.set('ranksep' , 1);
     g.set('rankdir', orientation);
@@ -92,7 +92,7 @@ var toDotModel = function(tokenList, config) {
  * @param input a string representing the uml-syntax
  * @param callback which gets called when the transformation is done
  */
-var processString = function(input, config, callback) {
+const processString = (input, config, callback) => {
     if (typeof config === 'function' && callback === undefined) {
         callback = config;
         config = {};
@@ -107,7 +107,7 @@ var processString = function(input, config, callback) {
  * @param filePath path to the uml-input-file to be transformed (convenience-method for processString())
  * @param callback which gets called when the transformation is done
  */
-var processFile = function(filePath, config, callback) {
+const processFile = (filePath, config, callback) => {
     if (typeof config === 'function' && callback === undefined) {
         callback = config; 
         config = {};

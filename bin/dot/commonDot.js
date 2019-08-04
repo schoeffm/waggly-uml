@@ -1,15 +1,13 @@
 'use strict';
 
-var util = require('util');
-var _ = require('lodash');
-var c = require('./../constants');
+const util = require('util');
+const _ = require('lodash');
+const c = require('./../constants');
 
-var recordName = function(label) {
-    return _.trim(label.split('|')[0]);
-};
+const recordName = (label) => _.trim(label.split('|')[0]);
 
-var prepareLabel = function(label, orientation) {
-    var processedLabel = label;
+const prepareLabel = (label, orientation) => {
+    let processedLabel = label;
     if (label.indexOf('|') >= 0) {
         processedLabel = label + "\\n";
         processedLabel = processedLabel.replace(/\|/g, '\\n|');
@@ -30,7 +28,7 @@ var prepareLabel = function(label, orientation) {
     return processedLabel;
 };
 
-var _setAttributesIfDefined = function(node, token) {
+const _setAttributesIfDefined = (node, token) => {
     node.set('style', 'filled');
     node.set('fillcolor', (token.content.additions && token.content.additions.bg) ? token.content.additions.bg : 'white');
     
@@ -39,11 +37,11 @@ var _setAttributesIfDefined = function(node, token) {
     }
 };
 
-var edgeHandlers = {
-    edgeUsingConfig: function (edgeToken, tokenBefore, tokenAfter, config, g, nodeLookupCache) {
+const edgeHandlers = {
+    edgeUsingConfig: (edgeToken, tokenBefore, tokenAfter, config, g, nodeLookupCache) => {
         if (c.is(edgeToken.type, c.NODE_TYPE_EDGE) && tokenBefore && tokenAfter) {
-            var leftNode = nodeLookupCache[recordName(tokenBefore.content.text)];
-            var rightNode = nodeLookupCache[recordName(tokenAfter.content.text)];
+            let leftNode = nodeLookupCache[recordName(tokenBefore.content.text)];
+            let rightNode = nodeLookupCache[recordName(tokenAfter.content.text)];
             
             if (tokenBefore.type === c.NODE_TYPE_CLUSTER) {
                 config = _.merge( { ltail : nodeLookupCache[recordName(tokenBefore.content.text)].id }, config );
@@ -57,7 +55,7 @@ var edgeHandlers = {
             g.addEdge(leftNode, rightNode, config);
         }
     },
-    edge: function (edgeToken, tokenBefore, tokenAfter, g, nodeLookupCache) {
+    edge: (edgeToken, tokenBefore, tokenAfter, g, nodeLookupCache) => {
         if (c.is(edgeToken.type, c.NODE_TYPE_EDGE) && tokenBefore && tokenAfter) {
             edgeHandlers.edgeUsingConfig(edgeToken, tokenBefore, tokenAfter,
                 {
@@ -74,20 +72,20 @@ var edgeHandlers = {
     }
 };
 
-var nodeHandlers = {
-    nodeUsingConfig: function(token, config, g, nodeLookupCache) {
+const nodeHandlers = {
+    nodeUsingConfig: (token, config, g, nodeLookupCache) => {
         if (nodeLookupCache[recordName(token.content.text)]) { return; }
-        var uid = 'A' + _.size(nodeLookupCache);
-        var node = g.addNode(uid, config);
+        const uid = 'A' + _.size(nodeLookupCache);
+        const node = g.addNode(uid, config);
         
         _setAttributesIfDefined(node, token);
         
         nodeLookupCache[recordName(token.content.text)] = node;
     },
-    note: function(token, g, nodeLookupCache) {
+    note: (token, g, nodeLookupCache) => {
         if (nodeLookupCache[recordName(token.content.text)]) { return; }
-        var uid = 'A' + _.size(nodeLookupCache);
-        var node = g.addNode(uid, {
+        const uid = 'A' + _.size(nodeLookupCache);
+        const node = g.addNode(uid, {
             'shape': (token.type !== 'record' || _.startsWith(token.content.text, c.NODE_TYPE_PRECISION_ACTOR)) ? token.type : 'ellipse',
             'height': (_.startsWith(token.content.text, c.NODE_TYPE_PRECISION_ACTOR) ? 1.5 : 0.8),
             'width': (_.startsWith(token.content.text, c.NODE_TYPE_PRECISION_ACTOR) ? 1 : 1.5),
@@ -101,16 +99,16 @@ var nodeHandlers = {
         nodeLookupCache[recordName(token.content.text)] = node;
     },
     
-    cluster : function(token, g, nodeLookupCache) {
-        var cuid = 'cluster_A' + _.size(nodeLookupCache);
+    cluster : (token, g, nodeLookupCache) => {
+        const cuid = 'cluster_A' + _.size(nodeLookupCache);
         if (nodeLookupCache[recordName(token.content.text)]) { return; }
-        var subGraph = g.addCluster(cuid);
+        const subGraph = g.addCluster(cuid);
         nodeLookupCache[recordName(token.content.text)] = subGraph;
         subGraph.set('label', token.content.text);
         subGraph.set('fontsize', 10);
         _setAttributesIfDefined(subGraph, token);
         
-        _.forEach(token.content.nodeNames, function (element) {
+        _.forEach(token.content.nodeNames, (element) => {
             if (nodeLookupCache[recordName(element)]) {
                 subGraph.addNode(nodeLookupCache[element].id);
             }

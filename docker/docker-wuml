@@ -1,3 +1,0 @@
-#!/bin/bash
-
-docker run --rm -ti -v `pwd`:/data schoeffm/wuml bash

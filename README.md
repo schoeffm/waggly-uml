@@ -136,25 +136,25 @@ apt-get install -y librsvg2-bin graphviz plotutils
 Well - there's also a `Dockerfile` contained in the git-repo you can use to get started. Just change into the folder, build the image and run it:
 
 ```
-$ cd docker
 $ docker build -t="schoeffm/wuml" .
 $ docker run --rm -ti schoeffm/wuml -h
-  Usage: wuml [options]
+Usage: wuml [options]
 
-  Options:
-
-    -h, --help                   output usage information
-    -V, --version                output the version number
-    -p, --png                    Export to PNG
-    -t, --type [class|sequence]  Determines the graph-type to be created based on the given input (default is 'class')
-    -c, --content <content>      UML-image content as input-string
-    -i, --input <path>           Input UML description file
-    -o, --output <path>          Filename for the output diagram file
-    -w, --waggly                 Turns on the waggly-mode
-    --fontFamily <font>          Set the output font-family (i.e. Purisa or Dadhand)
-    --fontSize <size>            Set the size of the font to be used
+Options:
+  -V, --version                        output the version number
+  -f, --format [svg|png|jpg]           Optional: Determine your prefered output format (default is 'svg')
+  -t, --type [class|sequence|usecase]  Determines the graph-type to be created based on the given input (default is 'class')
+  -c, --content <content>              UML-image content as input-string
+  -i, --input <path>                   Input UML description file
+  -o, --output <path>                  Filename for the output diagram file
+  -O, --orientation [LR|TD]            Optional: Orientation (Left-To-Right or Top-Down) (default will be determined automatically)
+  -S, --splines [ortho|spline]         Optional: What kind of associations will be drawn (default is 'spline')
+  -w, --waggly                         Turns on the waggly-mode
+  --fontFamily <font>                  Set the output font-family (i.e. Purisa or Dadhand)
+  --fontSize <size>                    Set the size of the font to be used
+  -h, --help                           output usage information
     
-$ docker run --rm -ti -v /absolue/path/to/test/data:/data schoeffm/wuml -i /data/input.wuml -o /data/output.png -p -w --fontFamily Purisa`
+$ docker run --rm -ti -v /absolue/path/to/test/data:/data schoeffm/wuml -i /data/input.wuml -o /data/output.png -w --fontFamily Purisa`
 ```
 
 

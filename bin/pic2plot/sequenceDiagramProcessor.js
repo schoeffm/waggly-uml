@@ -1,20 +1,20 @@
 'use strict';
 
-var _ = require('lodash');
-var util = require('util');
-var graphviz = require('graphviz');
-var parser = require('./../parser').create({startNodeSigns : ['['], endNodeSigns : [']'] });
-var fs = require('fs');
-var c = require('./../constants');
+const _ = require('lodash');
+const util = require('util');
+const graphviz = require('graphviz');
+const parser = require('./../parser').create({startNodeSigns : ['['], endNodeSigns : [']'] });
+const fs = require('fs');
+const c = require('./../constants');
 
-var recordName = function(label) {
+const recordName = (label) => {
     return _.trim(label.split('|')[0]);
 };
 
-var collectObjects = function(tokenList) {
-    var nodeLookupCache = {};
-    for (var i = 0; i < tokenList.length; i++) {
-        var token = tokenList[i];
+const collectObjects = (tokenList) => {
+    const nodeLookupCache = {};
+    for (let i = 0; i < tokenList.length; i++) {
+        const token = tokenList[i];
         if (_.includes([c.NODE_TYPE_RECORD, c.NODE_TYPE_ELLIPSE], token.type)) {
             if (nodeLookupCache[recordName(token.content.text)]) {
                 continue;
@@ -24,14 +24,14 @@ var collectObjects = function(tokenList) {
     return nodeLookupCache;
 };
 
-var collectMessages = function(tokenList, nodeLookupCache) {
-    var messageLookupList = {};
-    for (var i = 0; i < tokenList.length; i++) {
-        var token = tokenList[i];
+const collectMessages = (tokenList, nodeLookupCache) => {
+    const messageLookupList = {};
+    for (let i = 0; i < tokenList.length; i++) {
+        const token = tokenList[i];
         if (c.is(token.type, c.NODE_TYPE_EDGE) && tokenList[i - 1] && tokenList[i + 1]) {
-            var text = token.content.left.text || token.content.right.text;
-            var leftObject = tokenList[i - 1];
-            var rightObject = tokenList[i + 1];
+            const text = token.content.left.text || token.content.right.text;
+            const leftObject = tokenList[i - 1];
+            const rightObject = tokenList[i + 1];
             messageLookupList['Lin' + i] = _.merge(token,
                 {
                     text: text,
@@ -44,23 +44,23 @@ var collectMessages = function(tokenList, nodeLookupCache) {
     return messageLookupList;
 };
 
-var filterPassiveObjects = function(messageLookupCache, objectLookupCache) {
-    var result = _.filter(messageLookupCache, function(value, key) { return value.text === 'create'; });
+const filterPassiveObjects = (messageLookupCache, objectLookupCache) => {
+    const result = _.filter(messageLookupCache, (value, key) => value.text === 'create');
     
-    var passiveObjects = {};
+    const passiveObjects = {};
     
-    _.reduce(result, function(acc, element, key){
+    _.reduce(result, (acc, element, key) => {
         acc[recordName(element.to.content.text)] = element.to;  // the to-object will be created lazily                
     }, passiveObjects);
     
-    _.filter(objectLookupCache, function(object) { return _.startsWith(object.content.text,'actor:' ); })
-        .forEach(function(actor) { passiveObjects[recordName(actor.content.text)] = actor; });
+    _.filter(objectLookupCache, (object) => _.startsWith(object.content.text,'actor:' ))
+        .forEach((actor) => { passiveObjects[recordName(actor.content.text)] = actor; });
     
     return passiveObjects;
 };
 
-var mapMessageType = function(value) {
-    var type = 'message'; 
+const mapMessageType = (value) => {
+    let type = 'message';
     if (value.text === 'create') { type = 'cmessage'; }
     else if (value.text === 'destroy') { type = 'dmessage'; }
     
@@ -71,12 +71,12 @@ var mapMessageType = function(value) {
     return type;
 };
 
-var toPicModel = function(tokenList) {
-    var picLines= [];
+const toPicModel = (tokenList) => {
+    const picLines= [];
 
-    var objectLookupCache = collectObjects(tokenList);
-    var messageLookupCache = collectMessages(tokenList, objectLookupCache);
-    var passiveObjects = filterPassiveObjects(messageLookupCache, objectLookupCache);
+    const objectLookupCache = collectObjects(tokenList);
+    const messageLookupCache = collectMessages(tokenList, objectLookupCache);
+    const passiveObjects = filterPassiveObjects(messageLookupCache, objectLookupCache);
 
     // start the diagram by including the sequence.pic
     picLines.push('.PS');
@@ -84,26 +84,26 @@ var toPicModel = function(tokenList) {
     picLines.push('underline=0;');
     
     // first - add all (unique) objects to the diagram 
-    _.forEach(objectLookupCache, function(value, key) {
+    _.forEach(objectLookupCache, (value, key) => {
         if (_.startsWith(value.content.text, 'actor:')) {
             picLines.push(util.format('%s(%s,"%s",%d);', 'actor', value.uid, key.split(':')[1], 20));
         } else {
-            var objectType = (passiveObjects[recordName(value.content.text)]) ? 'pobject' : 'object' ;
+            const objectType = (passiveObjects[recordName(value.content.text)]) ? 'pobject' : 'object' ;
             picLines.push(util.format('%s(%s,"%s",%d);', objectType, value.uid, key, 20));
         }
     });
     picLines.push('step();');
     
     // after the step - activate all objects (don't activate placeholder-objects)
-    _.forEach(objectLookupCache, function(value) {
+    _.forEach(objectLookupCache, (value) => {
         if (! passiveObjects[recordName(value.content.text)]) {
             picLines.push(util.format('active(%s);', value.uid));
         }
     });
     
     // now place all messages between our objects
-    _.forEach(messageLookupCache, function(value, key) {
-        var messageType = mapMessageType(value);
+    _.forEach(messageLookupCache, (value, key) => {
+        const messageType = mapMessageType(value);
         if (messageType === 'dmessage') {
             picLines.push(util.format('inactive(%s);', objectLookupCache[recordName(value.to.content.text)].uid));
         }
@@ -119,9 +119,7 @@ var toPicModel = function(tokenList) {
 
     picLines.push('step();');
     // finally, after adding an additional step, complete the swime-lines 
-    _.forEach(objectLookupCache, function(value) {
-        picLines.push(util.format('complete(%s);', value.uid));
-    });
+    _.forEach(objectLookupCache, (value) => picLines.push(util.format('complete(%s);', value.uid)));
     
     picLines.push('step();');
     
@@ -133,7 +131,7 @@ var toPicModel = function(tokenList) {
  * @param input a string representing the uml-syntax
  * @param callback which gets called when the transformation is done
  */
-var processString = function(input, config, callback) {
+const processString = (input, config, callback) => {
     if (typeof config === 'function' && callback === undefined) {
         callback = config;
         config = {};
@@ -148,7 +146,7 @@ var processString = function(input, config, callback) {
  * @param filePath path to the uml-input-file to be transformed (convenience-method for processString())
  * @param callback which gets called when the transformation is done
  */
-var processFile = function(filePath, config, callback) {
+const processFile = (filePath, config, callback) => {
     if (typeof config === 'function' && callback === undefined) {
         callback = config;
         config = {};
@@ -156,7 +154,7 @@ var processFile = function(filePath, config, callback) {
     if (filePath === undefined) { throw new Error("You must provide a 'filePath' in order to be of any value"); }
     if (callback === undefined) { throw new Error("You must provide a 'callback' in order to process the transformed result"); }
 
-    fs.readFile(filePath, {encoding: 'utf-8'}, function(err, data) {
+    fs.readFile(filePath, {encoding: 'utf-8'}, (err, data) => {
         callback(toPicModel(parser.toDocumentModel(data)));
     });
 };

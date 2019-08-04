@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 'use strict';
 
-var program  = require('commander');
-var _ = require('lodash');
-var umlProcessor = require('./umlProcessor');
-var fs = require('fs');
-var pjson = require('../package.json');
-var classProcessor = require('./dot/classDiagramProcessor');
-var useCaseProcessor = require('./dot/useCaseDiagramProcessor');
-var sequenceProcessor = require('./pic2plot/sequenceDiagramProcessor');
-var notSupportedProcessor = require('./notSupportedDiagramProcessor');
+const program  = require('commander');
+const _ = require('lodash');
+const umlProcessor = require('./umlProcessor');
+const fs = require('fs');
+const pjson = require('../package.json');
+const classProcessor = require('./dot/classDiagramProcessor');
+const useCaseProcessor = require('./dot/useCaseDiagramProcessor');
+const sequenceProcessor = require('./pic2plot/sequenceDiagramProcessor');
+const notSupportedProcessor = require('./notSupportedDiagramProcessor');
 
-var types = {};
+const types = {};
 types['class'] = classProcessor;
 types['sequence'] = sequenceProcessor;
 types['usecase'] = useCaseProcessor;
@@ -40,12 +40,12 @@ if (!process.argv.slice(2).length) {
 }
 
 // default is the class-processor - otherwise you'll have to provide a sensible input
-var processor = (program.type && types[program.type]) ? types[program.type] : classProcessor;
+const processor = (program.type && types[program.type]) ? types[program.type] : classProcessor;
 
 if (program.content) {
-    processor.processString(program.content, program, function(output) { umlProcessor.processUmlOutput(output, program); });
+    processor.processString(program.content, program, (output) => { umlProcessor.processUmlOutput(output, program); });
 } else if (program.input) {
-    processor.processFile(program.input, program, function(output) { umlProcessor.processUmlOutput(output, program); });
+    processor.processFile(program.input, program, (output) => { umlProcessor.processUmlOutput(output, program); });
 } else {
     console.log('No input specified. See \'wuml --help\':');
     program.outputHelp();

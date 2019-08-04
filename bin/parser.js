@@ -9,7 +9,7 @@ const _ = require('lodash');
  * @param wordCandidate (string)    a possible word
  * @param list (array)              a list the word should be pushed on (if it's non-empty)
  */
-const pushNonEmptyWords = function(wordCandidate, list) {
+const pushNonEmptyWords = (wordCandidate, list) => {
     const candidate = _.trim(wordCandidate);
     if (!_.isEmpty(candidate)) { list.push(candidate); }
 };
@@ -23,7 +23,7 @@ const pushNonEmptyWords = function(wordCandidate, list) {
  *                                  input into words
  * @return (array) a list of words - separated by the given configuration
  */
-const tokenize = function(umlDescription, delimiterConfig) {
+const tokenize = (umlDescription, delimiterConfig) => {
     let words = [];             // collects all non-empty words
     let word = '';              // buffer for the current word we're analyzing
     let nodeDefDepth = 0;       // shape-depth (we have to handle that for clusters)
@@ -76,11 +76,11 @@ const tokenize = function(umlDescription, delimiterConfig) {
 };
 
 
-const isEllipse = function(token) { return _.startsWith(token, '(') && _.endsWith(token, ')'); };
-const isEdge = function(token) { return token.indexOf('-') >= 0; };
-const isNote = function(token) { return _.startsWith(token.toLowerCase(), '[note:'); };
-const isClass = function(token) { return _.startsWith(token, '[') && _.endsWith(token, ']'); };
-const isCluster = function(token) {
+const isEllipse = (token) => _.startsWith(token, '(') && _.endsWith(token, ')');
+const isEdge = (token) => token.indexOf('-') >= 0;
+const isNote = (token) => _.startsWith(token.toLowerCase(), '[note:');
+const isClass = (token) => _.startsWith(token, '[') && _.endsWith(token, ']');
+const isCluster = (token) => {
     if (_.size(token) <= 1) return false;         // you cannot define a cluster with less than one char
     
     const stripped = token.substring(1, token.length - 1).replace(/{.*?}/gi,'');
@@ -101,13 +101,13 @@ const isCluster = function(token) {
  * @param token
  * @returns {Array}
  */
-const determineAdditions = function(token) {
+const determineAdditions = (token) => {
     const additions = {};
     const hasAdditions = /\{(.*?)\}/.exec(token);
     if (hasAdditions) {
         hasAdditions[1]
             .split(';')
-            .forEach(function(addition) {
+            .forEach((addition) => {
                 const regex = /^(\S+?)\s*?:\s*?(\S+?)$/;
                 const match = regex.exec(_.trim(addition));
                 if (match) {
@@ -128,7 +128,7 @@ const determineAdditions = function(token) {
  * @param end (string)      the end-sign (or substring)
  * @return (string) the bare text
  */
-const extractText = function(token, start, end) {
+const extractText = (token, start, end) => {
     const startIndex = token.indexOf(start) + 1;
     const endIndex = token.lastIndexOf(end);
 
@@ -142,7 +142,7 @@ const extractText = function(token, start, end) {
  * @param ellipseToken (string)     a token representing an ellipsis (with all necessary information)
  * @return (object) an ellipsis-representation
  */
-const processEllipse = function(ellipseToken) {
+const processEllipse = (ellipseToken) => {
     return {
         type: 'ellipse',
         content: {
@@ -158,7 +158,7 @@ const processEllipse = function(ellipseToken) {
  * @param noteToken (string)    a token representing a note
  * @return (object) a note-object
  */
-const processNote = function(noteToken) {
+const processNote = (noteToken) => {
     return {
         type: 'note',
         content: {
@@ -174,7 +174,7 @@ const processNote = function(noteToken) {
  * @param classtoken (string)   a token representing/containg a class definition
  * @return (object) a class-object
  */
-const processClass = function(classToken) {
+const processClass = (classToken) => {
     return {
         type: 'record',
         content: {
@@ -192,13 +192,13 @@ const processClass = function(classToken) {
  * @param clusterToken (string)     a token representaing a cluster
  * @return (object) a fine cluster
  */
-const processCluster = function(clusterTocken) {
+const processCluster = (clusterTocken) => {
     const startIndex = clusterTocken.indexOf('[') + 1;
     const endIndex = clusterTocken.indexOf('[', startIndex);
 
     const parts = clusterTocken.substring(1,clusterTocken.lenght).split('[');
-    const nodes = _.filter(parts, function(element) { return element.indexOf(']') >= 0; });
-    const trimmedNodes = _.map(nodes, function(element) {
+    const nodes = _.filter(parts, (element) => element.indexOf(']') >= 0);
+    const trimmedNodes = _.map(nodes, (element) => {
         const endIndex = element.indexOf(']');
         return element.substring(0,endIndex);
     });
@@ -220,7 +220,7 @@ const processCluster = function(clusterTocken) {
  * @param lookAt 
  * @returns {string}
  */
-const collectUntil = function(token, delimiter, lookAt) {
+const collectUntil = (token, delimiter, lookAt) => {
     const reverted = (lookAt && lookAt === LookAt.END ) || false;
     let result = '';
     const word = (reverted) ? token.split("").reverse().join("") : token;
@@ -249,7 +249,7 @@ const LookAt = {
  * @param edgeToken (string)        a token containing all information of an edge
  * @return (object) a complete object-representation of an edge
  */
-const processEdge = function(edgeToken) {
+const processEdge = (edgeToken) => {
     const isDashed = function(edge) { return edge.indexOf('-.-') >= 0; };
     const EDGE_DELIMITER = '-';
 
@@ -311,7 +311,7 @@ const Parser = function(configuration) {
      * @param input (string)        this is the input-wuml string representation
      * @return a list of objects representing the single parts of the given definition
      */
-    this.toDocumentModel = function(input) {
+    this.toDocumentModel = (input) => {
         const tokenList = tokenize(input, self.config);
 
         const objectModel = [];
