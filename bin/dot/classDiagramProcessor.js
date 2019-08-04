@@ -34,7 +34,7 @@ var toDotModel = function(tokenList, config) {
 
             if (c.is(token.type, c.NODE_TYPE_CLUSTER)) {
                 dotUtils.nodeHandlers.cluster(token, g, nodeLookupCache);
-            } else if (_.contains([c.NODE_TYPE_NOTE, c.NODE_TYPE_RECORD], token.type)) {
+            } else if (_.includes([c.NODE_TYPE_NOTE, c.NODE_TYPE_RECORD], token.type)) {
                 dotUtils.nodeHandlers.nodeUsingConfig(token, _.merge(configTemplate, {
                     'shape': token.type,
                     label: dotUtils.prepareLabel(token.content.text, g.get('rankdir'))
@@ -64,10 +64,10 @@ var toDotModel = function(tokenList, config) {
     }   }   };
 
     // determine configs as provided by the caller (if given at all)
-    var orientation = (config.orientation && _.contains(['TD', 'LR'], config.orientation))
+    var orientation = (config.orientation && _.includes(['TD', 'LR'], config.orientation))
         ? config.orientation
         : ((tokenList.length > 7) ? 'TD' : 'LR');
-    var splineType = (config.splines && _.contains(['ortho', 'spline'], config.splines))
+    var splineType = (config.splines && _.includes(['ortho', 'spline'], config.splines))
         ? config.splines
         : 'spline';
 

@@ -15,7 +15,7 @@ var collectObjects = function(tokenList) {
     var nodeLookupCache = {};
     for (var i = 0; i < tokenList.length; i++) {
         var token = tokenList[i];
-        if (_.contains([c.NODE_TYPE_RECORD, c.NODE_TYPE_ELLIPSE], token.type)) {
+        if (_.includes([c.NODE_TYPE_RECORD, c.NODE_TYPE_ELLIPSE], token.type)) {
             if (nodeLookupCache[recordName(token.content.text)]) {
                 continue;
             }

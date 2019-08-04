@@ -21,19 +21,19 @@ describe("'classDiagramProcessor'", function() {
         
         var modelDefinition = [{type: 'record', content: {background: '', text: 'ICustomer|+name;+email|'}}];
         var expectedDotModel = 'digraph G {\n' +
-        '  graph [ compound = true, ranksep = 1, rankdir = LR, splines = \"spline\" ];\n' +
-        '  "A0" [ height = 0.5, fontsize = 10, margin = "0.20, 0.05", shape = record, label = "ICustomer\\n|+name\\n+email\\n|\\n", style = \"filled\", fillcolor = \"white\" ];\n'+
+        '  graph [ compound =true, ranksep =1, rankdir =LR, splines = "spline" ];\n' +
+        '  "A0" [ height =0.5, fontsize =10, margin = "0.20, 0.05", shape =record, label = "ICustomer\\n|+name\\n+email\\n|\\n", style = "filled", fillcolor = "white" ];\n'+
         '}\n';
         
         it('Dot-Model will be created based on the given input', function() {
-            assert.equal(expectedDotModel ,classParser.toDotModel(modelDefinition,{}));
+            assert.equal(classParser.toDotModel(modelDefinition,{}), expectedDotModel);
         });
         
         it('when given an orientation this one will be used instead of the default one', function() {
             // given
             var expected = 'digraph G {\n' +
-                '  graph [ compound = true, ranksep = 1, rankdir = TD, splines = \"spline\" ];\n' +
-                '  "A0" [ height = 0.5, fontsize = 10, margin = "0.20, 0.05", shape = record, label = "{ ICustomer\\n|+name\\n+email\\n|\\n }", style = \"filled\", fillcolor = \"white\" ];\n'+
+                '  graph [ compound =true, ranksep =1, rankdir =TD, splines = "spline" ];\n' +
+                '  "A0" [ height =0.5, fontsize =10, margin = "0.20, 0.05", shape =record, label = "{ ICustomer\\n|+name\\n+email\\n|\\n }", style = "filled", fillcolor = "white" ];\n'+
                 '}\n';
             
             // when

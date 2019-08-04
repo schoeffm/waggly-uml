@@ -23,18 +23,18 @@ var testFixture =
 describe("'actorSubstitutionPostProcessor'", function() {
    it('... will translate the substitution to the correct position (22, -81.5)', function() {
        var result = underTest.actorSubstitutionPostProcessor(testFixture);
-       assert(_.contains(result, 'g transform="translate(22 -81.5)"'));
+       assert(_.includes(result, 'g transform="translate(22 -81.5)"'));
    });
     it('... will also place a Text containing the actor label (without prefix)', function() {
         var result = underTest.actorSubstitutionPostProcessor(testFixture);
-        assert(_.contains(result, 'font-size="10.00">User</text>'));
+        assert(_.includes(result, 'font-size="10.00">User</text>'));
     });
 });
 
 describe("'fontInjectionPostProcessor'", function() {
     it('... will inject the Dadhand-font definition if waggly is true', function() {
         var result = underTest.fontInjectionPostProcessor(testFixture, { waggly: true });
-        assert(_.contains(result, 'font-family="Dadhand"'));
+        assert(_.includes(result, 'font-family="Dadhand"'));
     });
     it('... for non-waggly stuff nothing will be injected', function() {
         var result = underTest.fontInjectionPostProcessor(testFixture, { waggly: false });
@@ -57,14 +57,14 @@ describe("'onClickInjectionPostProcessor'", function() {
     
     it('... will inject a click-listener function on all a-tags', function() {
         var result = underTest.onClickInjectionPostProcessor(testFixture, {});
-        assert(_.contains(result, '<a xlink:href="http://www.wuml.it" xlink:title="FamMainView" onclick="wuml.onNavigation(evt);'));
-        assert(_.contains(result, 'wuml.onNavigation = function(e) {'));
+        assert(_.includes(result, '<a xlink:href="http://www.wuml.it" xlink:title="FamMainView" onclick="wuml.onNavigation(evt);'));
+        assert(_.includes(result, 'wuml.onNavigation = function(e) {'));
     });
     
     it("... won't inject any javascript when no link is contained", function() {
         var result = underTest.onClickInjectionPostProcessor(testFixtureWithoutLink, {});
-        assert(! _.contains(result, '<a xlink:href="http://www.wuml.it" xlink:title="FamMainView" onclick="wuml.onNavigation(evt);'));
-        assert(! _.contains(result, 'wuml.onNavigation = function(e) {'));
+        assert(! _.includes(result, '<a xlink:href="http://www.wuml.it" xlink:title="FamMainView" onclick="wuml.onNavigation(evt);'));
+        assert(! _.includes(result, 'wuml.onNavigation = function(e) {'));
     })
 });
 
@@ -78,12 +78,12 @@ describe("'encodingReplacementProcessor'", function() {
     
     it('... will just replace any predefined encoding with UTF-8', function() {
         var result = underTest.encodingReplacementProcessor(testFixtureWithEncoding);
-        assert(_.contains(result, 'encoding="UTF-8"'));        
+        assert(_.includes(result, 'encoding="UTF-8"'));        
     });
 
     it('... will do nothing if no encoding was defined', function() {
         var result = underTest.encodingReplacementProcessor(
             testFixtureWithEncoding.replace('encoding="ISO-8859-1"', ''));
-        assert(! _.contains(result, 'encoding="UTF-8"'));
+        assert(! _.includes(result, 'encoding="UTF-8"'));
     });
 });

@@ -1,7 +1,6 @@
 'use strict';
 
-var _ = require('lodash');
-var util = require('util');
+const _ = require('lodash');
 
 /*
  * Takes a word, checks it whether it's empty or not and if it's not an empty word it'll be pushed into 
@@ -10,8 +9,8 @@ var util = require('util');
  * @param wordCandidate (string)    a possible word
  * @param list (array)              a list the word should be pushed on (if it's non-empty)
  */
-var pushNonEmptyWords = function(wordCandidate, list) {
-    var candidate = _.trim(wordCandidate);
+const pushNonEmptyWords = function(wordCandidate, list) {
+    const candidate = _.trim(wordCandidate);
     if (!_.isEmpty(candidate)) { list.push(candidate); }
 };
 
@@ -24,20 +23,20 @@ var pushNonEmptyWords = function(wordCandidate, list) {
  *                                  input into words
  * @return (array) a list of words - separated by the given configuration
  */
-var tokenize = function(umlDescription, delimiterConfig) {
-    var words = [];             // collects all non-empty words
-    var word = '';              // buffer for the current word we're analyzing
-    var nodeDefDepth = 0;       // shape-depth (we have to handle that for clusters)
-    var withinAddition = false; // marker to recognize when we're within an addition definition
+const tokenize = function(umlDescription, delimiterConfig) {
+    let words = [];             // collects all non-empty words
+    let word = '';              // buffer for the current word we're analyzing
+    let nodeDefDepth = 0;       // shape-depth (we have to handle that for clusters)
+    let withinAddition = false; // marker to recognize when we're within an addition definition
     
-    var isStartSign = function(character) { return withinAddition === false && _.contains(delimiterConfig.startNodeSigns, character); };
-    var isEndSign = function(character) { return withinAddition === false && _.contains(delimiterConfig.endNodeSigns, character); };
-    var isAdditionStartSign = function(character) { return _.contains(delimiterConfig.additionStartSign, character); };
-    var isAdditionEndSign = function(character) { return _.contains(delimiterConfig.additionEndSign, character); };
+    const isStartSign = function(character) { return withinAddition === false && _.includes(delimiterConfig.startNodeSigns, character); };
+    const isEndSign = function(character) { return withinAddition === false && _.includes(delimiterConfig.endNodeSigns, character); };
+    const isAdditionStartSign = function(character) { return _.includes(delimiterConfig.additionStartSign, character); };
+    const isAdditionEndSign = function(character) { return _.includes(delimiterConfig.additionEndSign, character); };
 
     // go through the umlDescription character by character
-    for (var i = 0; i < umlDescription.length; i++) {
-        var character = umlDescription[i];
+    for (let i = 0; i < umlDescription.length; i++) {
+        const character = umlDescription[i];
 
         // if the current character is a start-sign - increase nodeDefDepth by one (and thus start collecting chars)
         if (isStartSign(character)) { nodeDefDepth += 1; }
@@ -77,16 +76,16 @@ var tokenize = function(umlDescription, delimiterConfig) {
 };
 
 
-var isEllipse = function(token) { return _.startsWith(token, '(') && _.endsWith(token, ')'); };
-var isEdge = function(token) { return token.indexOf('-') >= 0; };
-var isNote = function(token) { return _.startsWith(token.toLowerCase(), '[note:'); };
-var isClass = function(token) { return _.startsWith(token, '[') && _.endsWith(token, ']'); };
-var isCluster = function(token) {
+const isEllipse = function(token) { return _.startsWith(token, '(') && _.endsWith(token, ')'); };
+const isEdge = function(token) { return token.indexOf('-') >= 0; };
+const isNote = function(token) { return _.startsWith(token.toLowerCase(), '[note:'); };
+const isClass = function(token) { return _.startsWith(token, '[') && _.endsWith(token, ']'); };
+const isCluster = function(token) {
     if (_.size(token) <= 1) return false;         // you cannot define a cluster with less than one char
     
-    var stripped = token.substring(1, token.length - 1).replace(/{.*?}/gi,'');
+    const stripped = token.substring(1, token.length - 1).replace(/{.*?}/gi,'');
     
-    // var stripped = token.substring(1, token.length - 1);
+    // const stripped = token.substring(1, token.length - 1);
     return stripped.indexOf('[') >= 0
 };
 
@@ -102,15 +101,15 @@ var isCluster = function(token) {
  * @param token
  * @returns {Array}
  */
-var determineAdditions = function(token) {
-    var additions = {};
-    var hasAdditions = /\{(.*?)\}/.exec(token);
+const determineAdditions = function(token) {
+    const additions = {};
+    const hasAdditions = /\{(.*?)\}/.exec(token);
     if (hasAdditions) {
         hasAdditions[1]
             .split(';')
             .forEach(function(addition) {
-                var regex = /^(\S+?)\s*?:\s*?(\S+?)$/;
-                var match = regex.exec(_.trim(addition));
+                const regex = /^(\S+?)\s*?:\s*?(\S+?)$/;
+                const match = regex.exec(_.trim(addition));
                 if (match) {
                     additions[match[1]] = match[2];
                 }  
@@ -129,11 +128,11 @@ var determineAdditions = function(token) {
  * @param end (string)      the end-sign (or substring)
  * @return (string) the bare text
  */
-var extractText = function(token, start, end) {
-    var startIndex = token.indexOf(start) + 1;
-    var endIndex = token.lastIndexOf(end);
+const extractText = function(token, start, end) {
+    const startIndex = token.indexOf(start) + 1;
+    const endIndex = token.lastIndexOf(end);
 
-    var result = token.substring(startIndex, endIndex);
+    const result = token.substring(startIndex, endIndex);
     return _.trim(result.replace(/\{.+\}/,''));
 };
 
@@ -143,7 +142,7 @@ var extractText = function(token, start, end) {
  * @param ellipseToken (string)     a token representing an ellipsis (with all necessary information)
  * @return (object) an ellipsis-representation
  */
-var processEllipse = function(ellipseToken) {
+const processEllipse = function(ellipseToken) {
     return {
         type: 'ellipse',
         content: {
@@ -159,7 +158,7 @@ var processEllipse = function(ellipseToken) {
  * @param noteToken (string)    a token representing a note
  * @return (object) a note-object
  */
-var processNote = function(noteToken) {
+const processNote = function(noteToken) {
     return {
         type: 'note',
         content: {
@@ -175,7 +174,7 @@ var processNote = function(noteToken) {
  * @param classtoken (string)   a token representing/containg a class definition
  * @return (object) a class-object
  */
-var processClass = function(classToken) {
+const processClass = function(classToken) {
     return {
         type: 'record',
         content: {
@@ -193,14 +192,14 @@ var processClass = function(classToken) {
  * @param clusterToken (string)     a token representaing a cluster
  * @return (object) a fine cluster
  */
-var processCluster = function(clusterTocken) {
-    var startIndex = clusterTocken.indexOf('[') + 1;
-    var endIndex = clusterTocken.indexOf('[', startIndex);
+const processCluster = function(clusterTocken) {
+    const startIndex = clusterTocken.indexOf('[') + 1;
+    const endIndex = clusterTocken.indexOf('[', startIndex);
 
-    var parts = clusterTocken.substring(1,clusterTocken.lenght).split('[');
-    var nodes = _.filter(parts, function(element) { return element.indexOf(']') >= 0; });
-    var trimmedNodes = _.map(nodes, function(element) {
-        var endIndex = element.indexOf(']');
+    const parts = clusterTocken.substring(1,clusterTocken.lenght).split('[');
+    const nodes = _.filter(parts, function(element) { return element.indexOf(']') >= 0; });
+    const trimmedNodes = _.map(nodes, function(element) {
+        const endIndex = element.indexOf(']');
         return element.substring(0,endIndex);
     });
 
@@ -221,24 +220,24 @@ var processCluster = function(clusterTocken) {
  * @param lookAt 
  * @returns {string}
  */
-var collectUntil = function(token, delimiter, lookAt) {
-    var reverted = (lookAt && lookAt === LookAt.END ) || false;
-    var result = '';
-    var word = (reverted) ? token.split("").reverse().join("") : token;
+const collectUntil = function(token, delimiter, lookAt) {
+    const reverted = (lookAt && lookAt === LookAt.END ) || false;
+    let result = '';
+    const word = (reverted) ? token.split("").reverse().join("") : token;
 
     if (lookAt === LookAt.BETWEEN) {
-        var regex = new RegExp(delimiter + '([^\\..*]*)' + delimiter, 'g');
+        const regex = new RegExp(delimiter + '([^\\..*]*)' + delimiter, 'g');
         result = word.match(regex);
         return _.trim(result, delimiter);
     } else {
-        for (var i = 0; i < word.length; i++) {
+        for (let i = 0; i < word.length; i++) {
             if (word[i] !== delimiter) { result += word[i]; }
             else { break; }
         }
         return (reverted) ? result.split("").reverse().join("") : result;
     }
 };
-var LookAt = {
+const LookAt = {
     START : 'start',
     END : 'end',
     BETWEEN : 'between'
@@ -250,12 +249,12 @@ var LookAt = {
  * @param edgeToken (string)        a token containing all information of an edge
  * @return (object) a complete object-representation of an edge
  */
-var processEdge = function(edgeToken) {
-    var isDashed = function(edge) { return edge.indexOf('-.-') >= 0; };
-    var EDGE_DELIMITER = '-';
+const processEdge = function(edgeToken) {
+    const isDashed = function(edge) { return edge.indexOf('-.-') >= 0; };
+    const EDGE_DELIMITER = '-';
 
-    var leftResult;
-    var rightResult;
+    let leftResult;
+    let rightResult;
 
     // take care of the left part of the edge
     if (_.startsWith(edgeToken, '<>')) { leftResult = { 
@@ -301,8 +300,8 @@ var processEdge = function(edgeToken) {
  *                                      algorithm should use as start- and end-sign respectively when processing the
  *                                      token/words of the input
  */
-var Parser = function(configuration) {
-    var self = this;
+const Parser = function(configuration) {
+    const self = this;
     this.config = configuration;
     
     /**
@@ -313,11 +312,11 @@ var Parser = function(configuration) {
      * @return a list of objects representing the single parts of the given definition
      */
     this.toDocumentModel = function(input) {
-        var tokenList = tokenize(input, self.config);
+        const tokenList = tokenize(input, self.config);
 
-        var objectModel = [];
-        for (var i = 0; i < tokenList.length; i++) {
-            var token = tokenList[i];
+        const objectModel = [];
+        for (let i = 0; i < tokenList.length; i++) {
+            const token = tokenList[i];
             if (_.startsWith(token, '//')) {
                 continue;                                // skip comments
             } else if (isNote(token)) {

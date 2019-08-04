@@ -1,6 +1,6 @@
 {
   "name": "wuml",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "A CLI tool which lets you create UML-diagrams based on an ascii description",
   "private": false,
   "main": "./bin/umlProcessor",
@@ -23,16 +23,16 @@
   "license": "MIT",
   "bugs": "https://github.com/schoeffm/waggly-uml/issues",
   "dependencies": {
-    "commander": "~2.0.0",
-    "graphviz": "0.0.8",
-    "lodash": "^3.8.0",
-    "node-imagemagick": "^0.1.8",
-    "through": "^2.3.7",
-    "wsvg": "^0.0.13",
-    "xmldom": "^0.1.19",
-    "xpath": "0.0.9"
+    "commander": "2.20.0",
+    "graphviz": "0.0.9",
+    "lodash": "4.17.15",
+    "node-imagemagick": "0.1.8",
+    "through": "2.3.8",
+    "wsvg": "0.0.14",
+    "xmldom": "0.1.27",
+    "xpath": "0.0.27"
   },
   "devDependencies": {
-    "mocha": "^2.2.4"
+    "mocha": "2.2.4"
   }
 }

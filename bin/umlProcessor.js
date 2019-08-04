@@ -92,7 +92,7 @@ var toFileCallback = function(config) {
 }); };  };
 
 var transformTo = function (outputData, format, callback) {
-    var destinationFormat = (_.contains(['png', 'jpg'], format)) ? format : 'jpg';
+    var destinationFormat = (_.includes(['png', 'jpg'], format)) ? format : 'jpg';
     var conv = im.convert(['-trim', 'svg:-', destinationFormat + ':-']);
 
     var accumulator = [];

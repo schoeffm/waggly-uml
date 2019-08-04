@@ -19,7 +19,7 @@ types[''] = notSupportedProcessor;
 
 program
     .version(pjson.version)
-    .option('-f, --format [svg|png|jpg]', "Optional: Determine your prefered output format (default id 'svg')")
+    .option('-f, --format [svg|png|jpg]', "Optional: Determine your prefered output format (default is 'svg')")
     .option('-t, --type [class|sequence|usecase]', "Determines the graph-type to be created based on the given input (default is 'class')")
     .option('-c, --content <content>', "UML-image content as input-string")
     .option('-i, --input <path>', "Input UML description file")

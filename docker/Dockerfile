@@ -1,4 +1,4 @@
-FROM node:wheezy
+FROM node:latest
 MAINTAINER Stefan Schoefmann, <stefan.schoeffmann@posteo.de>
 
 ENV LAST_UPDATED 2015-05-23

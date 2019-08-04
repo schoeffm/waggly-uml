@@ -12,7 +12,7 @@ describe('wuml bin', function() {
         exec(cmd + '--help', function (error, stdout, stderr) {
             console.log(stderr);
             assert(!error);
-            assert(stdout.indexOf('Usage: wuml') > 0);
+            assert(stdout.indexOf('Usage: wuml') >= 0);
             done();
         });
     });
