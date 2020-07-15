@@ -25,7 +25,7 @@
   "dependencies": {
     "commander": "2.20.0",
     "graphviz": "0.0.9",
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "node-imagemagick": "0.1.8",
     "through": "2.3.8",
     "wsvg": "0.0.14",
